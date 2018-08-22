@@ -4,17 +4,19 @@ using System.Threading.Tasks;
 using BeerBot.BeerApiClient;
 using Microsoft.Bot;
 using Microsoft.Bot.Builder;
+using Microsoft.Bot.Builder.Core.Extensions;
+using Microsoft.Bot.Builder.Dialogs;
 using Microsoft.Bot.Schema;
 
 namespace BeerBot
 {
     public class BeerBot : IBot
     {
-        private readonly IBeerApi _beerService;
+        private readonly BeerDialogs _beerDialogs;
 
         public BeerBot(IBeerApi beerService)
         {
-            _beerService = beerService;
+            _beerDialogs = new BeerDialogs(beerService);
         }
 
         public async Task OnTurn(ITurnContext context)
@@ -37,21 +39,27 @@ namespace BeerBot
 
         private async Task HandleMessage(ITurnContext context)
         {
-            switch (context.Activity.Text)
+            var conversationState = context.GetConversationState<BeerConversationState>();
+            DialogContext dc = _beerDialogs.CreateContext(context, conversationState);
+            await dc.Continue();
+
+            if (!context.Responded)
             {
-                case var text when Regex.IsMatch(text, "^(hi|hello|hola).*", RegexOptions.IgnoreCase):
-                    await context.SendActivity("Welcome to your friendly neighbourhood bot-tender! How can I help you?");
-                    break;
-                case var text when Regex.IsMatch(text, ".*random.*", RegexOptions.IgnoreCase):
-                    var beer = await _beerService.BeersRandomGetAsync();
-                    await context.SendActivity($"You should definitly get a {beer.Name}");
-                    break;
-                case var text when Regex.IsMatch(text, ".*help.*", RegexOptions.IgnoreCase):
-                    await context.SendActivity("You can type 'random' for getting a beer recommendation");
-                    break;
-                case var text when Regex.IsMatch(text, "^(bye|exit|adios).*", RegexOptions.IgnoreCase):
-                    await context.SendActivity("So soon? Oh well. See you later :)");
-                    break;
+                switch (context.Activity.Text)
+                {
+                    case var text when Regex.IsMatch(text, "^(hi|hello|hola).*", RegexOptions.IgnoreCase):
+                        await dc.Begin(BeerDialogs.Dialogs.Greet);
+                        break;
+                    case var text when Regex.IsMatch(text, ".*random.*", RegexOptions.IgnoreCase):
+                        await dc.Begin(BeerDialogs.Dialogs.RandomBeer);
+                        break;
+                    case var text when Regex.IsMatch(text, ".*help.*", RegexOptions.IgnoreCase):
+                        await dc.Begin(BeerDialogs.Dialogs.MainMenu);
+                        break;
+                    case var text when Regex.IsMatch(text, "^(bye|exit|adios).*", RegexOptions.IgnoreCase):
+                        await dc.Begin(BeerDialogs.Dialogs.Exit);
+                        break;
+                }
             }
         }
 

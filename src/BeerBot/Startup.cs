@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using BeerBot.BeerApiClient;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -37,6 +38,9 @@ namespace BeerBot
                     await context.TraceActivity("BeerBot Exception", exception);
                     await context.SendActivity("Sorry, it looks like something went wrong!");
                 }));
+
+                IStorage dataStore = new MemoryStorage();
+                options.Middleware.Add(new ConversationState<BeerConversationState>(dataStore));
             });
 
             services.AddSingleton<IBeerApi, BeerApi>(sp => new BeerApi(new Uri(Configuration.GetValue<string>("BeerApiBaseUrl"))));
