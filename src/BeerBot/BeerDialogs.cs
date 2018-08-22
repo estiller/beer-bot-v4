@@ -15,6 +15,7 @@ namespace BeerBot
             public const string MainMenu = "mainMenu";
             public const string Greet = "greet";
             public const string RandomBeer = "randomBeer";
+            public const string RecommendBeer = RecommendBeerDialog.Id;
             public const string Exit = "exit";
         }
 
@@ -76,6 +77,8 @@ namespace BeerBot
                     await dc.Context.SendActivity($"You should definitly get a {beer.Name}");
                 },
             });
+
+            Add(Dialogs.RecommendBeer, new RecommendBeerDialog(beerService));
 
             Add(Dialogs.Exit, new WaterfallStep[]
             {
