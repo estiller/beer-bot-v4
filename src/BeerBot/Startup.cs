@@ -46,7 +46,9 @@ namespace BeerBot
                 options.Middleware.Add(new ShowTypingMiddleware());
 
                 IStorage dataStore = new MemoryStorage();
+                //IStorage dataStore = new AzureBlobStorage(Configuration.GetValue<string>("AzureTableConnectionString"), "beerstate");
                 options.Middleware.Add(new ConversationState<BeerConversationState>(dataStore));
+                options.Middleware.Add(new UserState<UserInfo>(dataStore));
             });
 
             services.AddSingleton<IBeerApi, BeerApi>(sp => new BeerApi(new Uri(Configuration.GetValue<string>("BeerApiBaseUrl"))));

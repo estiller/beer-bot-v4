@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using BeerBot.BeerApiClient;
 using BeerBot.Emojis;
+using Microsoft.Bot.Builder.Core.Extensions;
 using Microsoft.Bot.Builder.Dialogs;
 using Microsoft.Bot.Builder.Prompts.Choices;
 using Microsoft.Recognizers.Text;
@@ -49,6 +50,30 @@ namespace BeerBot
 
         private void AddGetExactBeerNameDialog()
         {
+            const string usualBeerDialog = "usualBeer";
+
+            Dialogs.Add(usualBeerDialog, new WaterfallStep[]
+            {
+                async (dc, args, next) =>
+                {
+                    string usualBeer = dc.Context.GetUserState<UserInfo>().UsualBeer;
+                    await dc.Prompt(Inputs.Confirm, $"Would you like your usual {usualBeer}?");
+                },
+                async (dc, args, next) =>
+                {
+                    var usualConfirmed = (bool) args["Confirmation"];
+                    if (usualConfirmed)
+                    {
+                        string usualBeer = dc.Context.GetUserState<UserInfo>().UsualBeer;
+                        await dc.End(new Dictionary<string, object> {{"Text", usualBeer}});
+                    }
+                    else
+                    {
+                        await dc.Prompt(Inputs.Text, "So what can I offer you instead?");
+                    }
+                },
+            });
+
             Dialogs.Add(DialogIds.GetExactBeerName, new WaterfallStep[]
             {
                 async (dc, args, next) =>
@@ -56,6 +81,10 @@ namespace BeerBot
                     if (args != null && args.TryGetValue(InputArgs.BeerName, out object beerNameObject))
                     {
                         await next(new Dictionary<string, object> {{"Text", beerNameObject}});
+                    }
+                    else if (!string.IsNullOrEmpty(dc.Context.GetUserState<UserInfo>().UsualBeer))
+                    {
+                        await dc.Begin(usualBeerDialog);
                     }
                     else
                     {
@@ -169,6 +198,8 @@ namespace BeerBot
                     var orderConfirmed = (bool) args["Confirmation"];
                     if (orderConfirmed)
                     {
+                        var beerOrder = (BeerOrder) dc.ActiveDialog.State[orderStateEntry];
+                        dc.Context.GetUserState<UserInfo>().UsualBeer = beerOrder.BeerName;
                         await dc.Context.SendActivity($"Cheers {Emoji.Beers}");
                     }
                     else
