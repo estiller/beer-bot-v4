@@ -2,6 +2,7 @@
 using System.Text.RegularExpressions;
 using BeerBot.BeerApiClient;
 using BeerBot.Emojis;
+using BeerBot.Services;
 using BeerBot.Utils;
 using Microsoft.Bot.Builder.Dialogs;
 using Microsoft.Bot.Builder.Prompts.Choices;
@@ -39,7 +40,7 @@ namespace BeerBot
             ("Order beer", new List<string> { "order", "order beer" }, Dialogs.OrderBeer),
             ("Exit", new List<string> { "bye", "adios" }, Dialogs.Exit));
 
-        public BeerDialogs(IBeerApi beerService)
+        public BeerDialogs(IBeerApi beerService, IImageSearchService imageSearch)
         {
             Add(Inputs.Choice, new ChoicePrompt(Culture.English));
             Add(Inputs.Text, new TextPrompt());
@@ -89,7 +90,7 @@ namespace BeerBot
                 },
             });
 
-            Add(InternalDialogs.InternalRecommendBeer, new RecommendBeerDialog(beerService));
+            Add(InternalDialogs.InternalRecommendBeer, new RecommendBeerDialog(beerService, imageSearch));
             Add(Dialogs.RecommendBeer, new WaterfallStep[]
             {
                 async (dc, args, next) => { await dc.Begin(InternalDialogs.InternalRecommendBeer); },

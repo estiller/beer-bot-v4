@@ -2,6 +2,7 @@
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using BeerBot.BeerApiClient;
+using BeerBot.Services;
 using Microsoft.Bot;
 using Microsoft.Bot.Builder;
 using Microsoft.Bot.Builder.Core.Extensions;
@@ -14,9 +15,9 @@ namespace BeerBot
     {
         private readonly BeerDialogs _beerDialogs;
 
-        public BeerBot(IBeerApi beerService)
+        public BeerBot(IBeerApi beerService, IImageSearchService imageSearch)
         {
-            _beerDialogs = new BeerDialogs(beerService);
+            _beerDialogs = new BeerDialogs(beerService, imageSearch);
         }
 
         public async Task OnTurn(ITurnContext context)

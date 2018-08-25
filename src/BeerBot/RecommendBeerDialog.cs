@@ -5,11 +5,14 @@ using System.Threading.Tasks;
 using BeerBot.BeerApiClient;
 using BeerBot.BeerApiClient.Models;
 using BeerBot.Emojis;
+using BeerBot.Services;
 using BeerBot.Utils;
 using Microsoft.Bot.Builder;
+using Microsoft.Bot.Builder.Core.Extensions;
 using Microsoft.Bot.Builder.Dialogs;
 using Microsoft.Bot.Builder.Prompts;
 using Microsoft.Bot.Builder.Prompts.Choices;
+using Microsoft.Bot.Schema;
 using Microsoft.Recognizers.Text;
 using ChoicePrompt = Microsoft.Bot.Builder.Dialogs.ChoicePrompt;
 using ConfirmPrompt = Microsoft.Bot.Builder.Dialogs.ConfirmPrompt;
@@ -51,10 +54,12 @@ namespace BeerBot
             ("By name", new List<string> { "name" }, DialogIds.ByName));
 
         private readonly IBeerApi _beerService;
+        private readonly IImageSearchService _imageSearch;
 
-        public RecommendBeerDialog(IBeerApi beerService) : base(Id)
+        public RecommendBeerDialog(IBeerApi beerService, IImageSearchService imageSearch) : base(Id)
         {
             _beerService = beerService;
+            _imageSearch = imageSearch;
 
             Dialogs.Add(Inputs.Choice, new ChoicePrompt(Culture.English));
             Dialogs.Add(Inputs.Confirm, new ConfirmPrompt(Culture.English));
@@ -231,9 +236,7 @@ namespace BeerBot
                             await dc.End();
                             break;
                         case 1:
-                            await dc.Context.SendActivity($"Eureka! This is the beer for you: '{beers[0].Name}'");
-                            await dc.Context.SendActivity($"Glad I could help {Emoji.Beer}");
-                            await dc.End(new Dictionary<string, object> {{OutputArgs.RecommendedBeerName, beers[0].Name}});
+                            await HandleBeerConfirmation(dc, beers[0].Name);
                             break;
                         default:
                         {
@@ -265,9 +268,8 @@ namespace BeerBot
                     var beerConfirmed = (bool) args["Confirmation"];
                     if (beerConfirmed)
                     {
-                        await dc.Context.SendActivity($"Glad I could help {Emoji.Beer}");
-                        await dc.End(new Dictionary<string, object>
-                            {{OutputArgs.RecommendedBeerName, dc.ActiveDialog.State[OutputArgs.RecommendedBeerName]}});
+                        var beerName = (string)dc.ActiveDialog.State[OutputArgs.RecommendedBeerName];
+                        await HandleBeerConfirmation(dc, beerName);
                     }
                     else
                     {
@@ -275,6 +277,21 @@ namespace BeerBot
                     }
                 }
             });
+
+            async Task HandleBeerConfirmation(DialogContext dc, string beerName)
+            {
+                var imageUrl = await _imageSearch.SearchImage(beerName);
+                var activity = MessageFactory.Attachment(
+                    new HeroCard(
+                            "Your Beer",
+                            beerName,
+                            images: new[] {new CardImage(imageUrl.ToString())}
+                        )
+                        .ToAttachment());
+                await dc.Context.SendActivity(activity);
+                await dc.Context.SendActivity($"Glad I could help {Emoji.Beer}");
+                await dc.End(new Dictionary<string, object> {{OutputArgs.RecommendedBeerName, beerName}});
+            }
         }
     }
 }
