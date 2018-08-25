@@ -21,6 +21,11 @@ namespace BeerBot
     {
         public const string Id = "recommendBeer";
 
+        public static class OutputArgs
+        {
+            public const string RecommendedBeerName = "recommendedBeerName";
+        }
+
         private static class DialogIds
         {
             public const string ByCategory = "byCategory";
@@ -71,6 +76,13 @@ namespace BeerBot
 
                     await dc.Begin(dialogId, dc.ActiveDialog.State);
                 },
+                async (dc, args, next) =>
+                {
+                    if (args != null && args.TryGetValue(OutputArgs.RecommendedBeerName, out object recommendBeerName))
+                    {
+                        await dc.End(new Dictionary<string, object> {{OutputArgs.RecommendedBeerName, recommendBeerName}});
+                    }
+                }
             });
 
             AddRecommendByNameDialog();
@@ -90,7 +102,7 @@ namespace BeerBot
                 async (dc, args, next) =>
                 {
                     var beers = (IList<Beer>) args[ArgNames.Beers];
-                    await dc.Begin(DialogIds.BeerConfirmation, new Dictionary<string, object> {{ArgNames.Beers, beers}});
+                    await dc.Replace(DialogIds.BeerConfirmation, new Dictionary<string, object> {{ArgNames.Beers, beers}});
                 }
             });
 
@@ -159,7 +171,7 @@ namespace BeerBot
                     var breweries = (IList<Brewery>) dc.ActiveDialog.State[breweriesStateEntry];
 
                     var beers = (await _beerService.BeersGetByBreweryAsync(breweries[breweryChoice.Index].Id)).Random(3);
-                    await dc.Begin(DialogIds.BeerConfirmation, new Dictionary<string, object> {{ArgNames.Beers, beers}});
+                    await dc.Replace(DialogIds.BeerConfirmation, new Dictionary<string, object> {{ArgNames.Beers, beers}});
                 }
             });
         }
@@ -200,7 +212,7 @@ namespace BeerBot
                     var styles = (IList<Style>) dc.ActiveDialog.State[stylesStateEntry];
 
                     var beers = await _beerService.BeersGetByStyleAsync(styles[styleChoice.Index].Id);
-                    await dc.Begin(DialogIds.BeerConfirmation, new Dictionary<string, object> {{ArgNames.Beers, beers}});
+                    await dc.Replace(DialogIds.BeerConfirmation, new Dictionary<string, object> {{ArgNames.Beers, beers}});
                 }
             });
         }
@@ -221,7 +233,7 @@ namespace BeerBot
                         case 1:
                             await dc.Context.SendActivity($"Eureka! This is the beer for you: '{beers[0].Name}'");
                             await dc.Context.SendActivity($"Glad I could help {Emoji.Beer}");
-                            await dc.End();
+                            await dc.End(new Dictionary<string, object> {{OutputArgs.RecommendedBeerName, beers[0].Name}});
                             break;
                         default:
                         {
@@ -238,6 +250,7 @@ namespace BeerBot
                 async (dc, args, next) =>
                 {
                     var choice = (FoundChoice) args["Value"];
+                    dc.ActiveDialog.State[OutputArgs.RecommendedBeerName] = choice.Value;
                     if (choice.Score < 0.7)
                     {
                         await dc.Prompt(Inputs.Confirm, $"Just making sure I got it right. Do you want a '{choice.Value}'?");
@@ -253,6 +266,8 @@ namespace BeerBot
                     if (beerConfirmed)
                     {
                         await dc.Context.SendActivity($"Glad I could help {Emoji.Beer}");
+                        await dc.End(new Dictionary<string, object>
+                            {{OutputArgs.RecommendedBeerName, dc.ActiveDialog.State[OutputArgs.RecommendedBeerName]}});
                     }
                     else
                     {

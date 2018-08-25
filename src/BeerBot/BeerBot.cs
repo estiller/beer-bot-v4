@@ -56,6 +56,9 @@ namespace BeerBot
                     case var text when Regex.IsMatch(text, ".*recommend.*", RegexOptions.IgnoreCase):
                         await dc.Begin(BeerDialogs.Dialogs.RecommendBeer);
                         break;
+                    case var text when Regex.IsMatch(text, ".*order.*", RegexOptions.IgnoreCase):
+                        await dc.Begin(BeerDialogs.Dialogs.OrderBeer);
+                        break;
                     case var text when Regex.IsMatch(text, ".*help.*", RegexOptions.IgnoreCase):
                         await dc.Begin(BeerDialogs.Dialogs.MainMenu);
                         break;
