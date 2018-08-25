@@ -2,6 +2,7 @@
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using BeerBot.BeerApiClient;
+using BeerBot.Emojis;
 using Microsoft.Bot;
 using Microsoft.Bot.Builder;
 using Microsoft.Bot.Schema;
@@ -40,17 +41,17 @@ namespace BeerBot
             switch (context.Activity.Text)
             {
                 case var text when Regex.IsMatch(text, "^(hi|hello|hola).*", RegexOptions.IgnoreCase):
-                    await context.SendActivity("Welcome to your friendly neighbourhood bot-tender! How can I help you?");
+                    await context.SendActivity("Welcome to your friendly neighborhood bot-tender! How can I help you?");
                     break;
                 case var text when Regex.IsMatch(text, ".*random.*", RegexOptions.IgnoreCase):
                     var beer = await _beerService.BeersRandomGetAsync();
-                    await context.SendActivity($"You should definitly get a {beer.Name}");
+                    await context.SendActivity($"You should definitely get a {beer.Name}");
                     break;
                 case var text when Regex.IsMatch(text, ".*help.*", RegexOptions.IgnoreCase):
                     await context.SendActivity("You can type 'random' for getting a beer recommendation");
                     break;
                 case var text when Regex.IsMatch(text, "^(bye|exit|adios).*", RegexOptions.IgnoreCase):
-                    await context.SendActivity("So soon? Oh well. See you later :)");
+                    await context.SendActivity($"So soon? Oh well. See you later {Emoji.Wave}");
                     break;
             }
         }
