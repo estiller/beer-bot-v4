@@ -28,6 +28,7 @@ namespace BeerBot
 
         private static DialogMenu DialogMenu { get; } = new DialogMenu(
             ("Get a random beer", new List<string> {"random", "random beer"}, Dialogs.RandomBeer),
+            ("Recommend a beer", new List<string> { "recommend", "recommend beer" }, Dialogs.RecommendBeer),
             ("Exit", new List<string> { "bye", "adios" }, Dialogs.Exit));
 
         public BeerDialogs(IBeerApi beerService)
