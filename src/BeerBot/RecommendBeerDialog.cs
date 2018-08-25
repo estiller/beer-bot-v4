@@ -14,6 +14,7 @@ using Microsoft.Bot.Builder.Prompts;
 using Microsoft.Bot.Builder.Prompts.Choices;
 using Microsoft.Bot.Schema;
 using Microsoft.Recognizers.Text;
+using Activity = Microsoft.Bot.Schema.Activity;
 using ChoicePrompt = Microsoft.Bot.Builder.Dialogs.ChoicePrompt;
 using ConfirmPrompt = Microsoft.Bot.Builder.Dialogs.ConfirmPrompt;
 using TextPrompt = Microsoft.Bot.Builder.Dialogs.TextPrompt;
@@ -280,6 +281,10 @@ namespace BeerBot
 
             async Task HandleBeerConfirmation(DialogContext dc, string beerName)
             {
+                var typingActivity = Activity.CreateTypingActivity();
+                await dc.Context.SendActivity(typingActivity);
+                await Task.Delay(1000);   // Make it look like we're typing a lot
+
                 var imageUrl = await _imageSearch.SearchImage(beerName);
                 var activity = MessageFactory.Attachment(
                     new HeroCard(
