@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using BeerBot.BeerApiClient;
+using BeerBot.Emojis;
 using BeerBot.Utils;
 using Microsoft.Bot.Builder.Dialogs;
 using Microsoft.Bot.Builder.Prompts.Choices;
@@ -57,7 +58,7 @@ namespace BeerBot
             {
                 async (dc, args, next) =>
                 {
-                    await dc.Prompt(Inputs.Text, "Welcome to your friendly neighbourhood bot-tender! How can I help?");
+                    await dc.Prompt(Inputs.Text, "Welcome to your friendly neighborhood bot-tender! How can I help?");
                 },
                 async (dc, args, next) =>
                 {
@@ -74,7 +75,7 @@ namespace BeerBot
                 async (dc, args, next) =>
                 {
                     var beer = await beerService.BeersRandomGetAsync();
-                    await dc.Context.SendActivity($"You should definitly get a {beer.Name}");
+                    await dc.Context.SendActivity($"You should definitely get a {beer.Name}");
                 },
             });
 
@@ -84,7 +85,7 @@ namespace BeerBot
             {
                 async (dc, args, next) =>
                 {
-                    await dc.Context.SendActivity("So soon? Oh well. See you later :)");
+                    await dc.Context.SendActivity($"So soon? Oh well. See you later {Emoji.Wave}");
                 },
             });
         }
