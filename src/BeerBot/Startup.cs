@@ -43,6 +43,7 @@ namespace BeerBot
                     await context.TraceActivity("BeerBot Exception", exception);
                     await context.SendActivity("Sorry, it looks like something went wrong!");
                 }));
+                options.Middleware.Add(new ShowTypingMiddleware());
 
                 IStorage dataStore = new MemoryStorage();
                 options.Middleware.Add(new ConversationState<BeerConversationState>(dataStore));

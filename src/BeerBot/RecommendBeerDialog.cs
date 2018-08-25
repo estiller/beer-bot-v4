@@ -281,8 +281,8 @@ namespace BeerBot
 
             async Task HandleBeerConfirmation(DialogContext dc, string beerName)
             {
-                var typingActivity = Activity.CreateTypingActivity();
-                await dc.Context.SendActivity(typingActivity);
+                //var typingActivity = Activity.CreateTypingActivity();
+                //await dc.Context.SendActivity(typingActivity);
                 await Task.Delay(1000);   // Make it look like we're typing a lot
 
                 var imageUrl = await _imageSearch.SearchImage(beerName);
