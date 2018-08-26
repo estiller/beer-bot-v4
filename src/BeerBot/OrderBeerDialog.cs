@@ -152,6 +152,7 @@ namespace BeerBot
 
                     if (beerOrder.Chaser != 0)
                     {
+                        await next();
                         return;
                     }
 
@@ -172,6 +173,7 @@ namespace BeerBot
 
                     if (beerOrder.Side != 0)
                     {
+                        await next();
                         return;
                     }
 
