@@ -1,5 +1,7 @@
-﻿using System.Linq;
-using System.Text.RegularExpressions;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using BeerBot.BeerApiClient;
 using BeerBot.Emojis;
@@ -15,10 +17,12 @@ namespace BeerBot
 {
     public class BeerBot : IBot
     {
+        private readonly LuisRecognizer _luisRecognizer;
         private readonly BeerDialogs _beerDialogs;
 
-        public BeerBot(IBeerApi beerService, IImageSearchService imageSearch)
+        public BeerBot(LuisRecognizer luisRecognizer, IBeerApi beerService, IImageSearchService imageSearch)
         {
+            _luisRecognizer = luisRecognizer;
             _beerDialogs = new BeerDialogs(beerService, imageSearch);
         }
 
@@ -48,30 +52,46 @@ namespace BeerBot
 
             if (!context.Responded)
             {
-                var luisResult = context.Services.Get<RecognizerResult>(LuisRecognizerMiddleware.LuisRecognizerResultKey);
-                var topIntent = luisResult?.GetTopScoringIntent();
+                var model = await _luisRecognizer.Recognize<BeerBotLuisModel>(context.Activity.Text, CancellationToken.None);
+                var topIntent = model.TopIntent().intent;
 
-                switch (topIntent != null ? topIntent.Value.intent.ToLowerInvariant() : null)
+                switch (topIntent)
                 {
-                    case "greet":
+                    case BeerBotLuisModel.Intent.Greet:
                         await dc.Begin(BeerDialogs.Dialogs.Greet);
                         break;
-                    case "randombeer":
+                    case BeerBotLuisModel.Intent.RandomBeer:
                         await dc.Begin(BeerDialogs.Dialogs.RandomBeer);
                         break;
-                    case "recommendbeer":
+                    case BeerBotLuisModel.Intent.RecommendBeer:
                         await dc.Begin(BeerDialogs.Dialogs.RecommendBeer);
                         break;
-                    case "orderbeer":
-                        await dc.Begin(BeerDialogs.Dialogs.OrderBeer);
+                    case BeerBotLuisModel.Intent.OrderBeer:
+                    {
+                        var beerOrderModel = model.Entities.beerorder?.FirstOrDefault();
+                        var beerOrder = new BeerOrder
+                        {
+                            BeerName = beerOrderModel?.beername?.FirstOrDefault(),
+                            Chaser = SafeParse<Chaser>(beerOrderModel?.chaser?.FirstOrDefault()?.FirstOrDefault()),
+                            Side = SafeParse<SideDish>(beerOrderModel?.sidedish?.FirstOrDefault()?.FirstOrDefault())
+                        };
+                        await dc.Begin(BeerDialogs.Dialogs.OrderBeer,
+                            new Dictionary<string, object> {{OrderBeerDialog.InputArgs.BeerOrder, beerOrder}});
                         break;
-                    case "gethelp":
+
+                        T SafeParse<T>(string value) where T : struct 
+                        {
+                            if (value == null) return default(T);
+                            return Enum.Parse<T>(value, true);
+                        }
+                    }
+                    case BeerBotLuisModel.Intent.GetHelp:
                         await dc.Begin(BeerDialogs.Dialogs.MainMenu);
                         break;
-                    case "bye":
+                    case BeerBotLuisModel.Intent.Bye:
                         await dc.Begin(BeerDialogs.Dialogs.Exit);
                         break;
-                    case "none":
+                    case BeerBotLuisModel.Intent.None:
                         break;
                     default:
                         await context.SendActivity($"Something must be wrong with my language circuits... {Emoji.Coffee}");

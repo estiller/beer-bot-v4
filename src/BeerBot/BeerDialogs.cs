@@ -111,8 +111,11 @@ namespace BeerBot
                     var orderConfirmed = (bool) args["Confirmation"];
                     if (orderConfirmed)
                     {
-                        await dc.Begin(Dialogs.OrderBeer, new Dictionary<string, object>
-                            {{OrderBeerDialog.InputArgs.BeerName, dc.ActiveDialog.State[RecommendBeerDialog.OutputArgs.RecommendedBeerName]}});
+                        var beerOrder = new BeerOrder
+                        {
+                            BeerName = (string)dc.ActiveDialog.State[RecommendBeerDialog.OutputArgs.RecommendedBeerName]
+                        };
+                        await dc.Begin(Dialogs.OrderBeer, new Dictionary<string, object>{{OrderBeerDialog.InputArgs.BeerOrder, beerOrder}});
                     }
                     else
                     {

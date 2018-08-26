@@ -51,22 +51,33 @@ namespace BeerBot
                 options.Middleware.Add(new ConversationState<BeerConversationState>(dataStore));
                 options.Middleware.Add(new UserState<UserInfo>(dataStore));
 
-                var modelId = Configuration.GetValue<string>("CognitiveServiceLuisAppId");
-                options.Middleware.Add(
-                    new LuisRecognizerMiddleware(
-                        new LuisModel(
-                            modelId,
-                            Configuration.GetValue<string>("CognitiveServiceLuisApiKey"),
-                            new Uri("https://westeurope.api.cognitive.microsoft.com/luis/v2.0/apps/")),
-                        new LuisRecognizerOptions { Verbose = true },
-                        new LuisRequest
-                        {
-                            SpellCheck = true,
-                            BingSpellCheckSubscriptionKey = Configuration.GetValue<string>("CognitiveServiceBingSpellCheckApiKey")
-                        }));
+                //options.Middleware.Add(
+                //    new LuisRecognizerMiddleware(
+                //        new LuisModel(
+                //            Configuration.GetValue<string>("CognitiveServiceLuisAppId"),
+                //            Configuration.GetValue<string>("CognitiveServiceLuisApiKey"),
+                //            new Uri("https://westeurope.api.cognitive.microsoft.com/luis/v2.0/apps/")),
+                //        new LuisRecognizerOptions { Verbose = true },
+                //        new LuisRequest
+                //        {
+                //            SpellCheck = true,
+                //            BingSpellCheckSubscriptionKey = Configuration.GetValue<string>("CognitiveServiceBingSpellCheckApiKey")
+                //        }));
 
                 options.Middleware.Add(new ShowTypingMiddleware());
             });
+
+            services.AddSingleton(sp => new LuisRecognizer(
+                new LuisModel(
+                    Configuration.GetValue<string>("CognitiveServiceLuisAppId"),
+                    Configuration.GetValue<string>("CognitiveServiceLuisApiKey"),
+                    new Uri("https://westeurope.api.cognitive.microsoft.com/luis/v2.0/apps/")),
+                new LuisRecognizerOptions {Verbose = true},
+                new LuisRequest
+                {
+                    SpellCheck = true,
+                    BingSpellCheckSubscriptionKey = Configuration.GetValue<string>("CognitiveServiceBingSpellCheckApiKey")
+                }));
 
             services.AddSingleton<IBeerApi, BeerApi>(sp => new BeerApi(new Uri(Configuration.GetValue<string>("BeerApiBaseUrl"))));
             services.AddSingleton<IImageSearchService, ImageSearchService>(sp => new ImageSearchService(Configuration.GetValue<string>("CognitiveServiceBingSearchApiKey")));

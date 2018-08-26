@@ -19,7 +19,7 @@ namespace BeerBot
 
         public static class InputArgs
         {
-            public const string BeerName = "beerName";
+            public const string BeerOrder = "beerOrder";
         }
 
         private static class DialogIds
@@ -32,6 +32,11 @@ namespace BeerBot
             public const string Text = "textPrompt";
             public const string Choice = "choicePrompt";
             public const string Confirm = "confirmPrompt";
+        }
+
+        private static class ArgNames
+        {
+            public const string BeerName = "beerName";
         }
 
         private readonly IBeerApi _beerService;
@@ -78,7 +83,7 @@ namespace BeerBot
             {
                 async (dc, args, next) =>
                 {
-                    if (args != null && args.TryGetValue(InputArgs.BeerName, out object beerNameObject))
+                    if (args != null && args.TryGetValue(ArgNames.BeerName, out object beerNameObject))
                     {
                         await next(new Dictionary<string, object> {{"Text", beerNameObject}});
                     }
@@ -102,7 +107,7 @@ namespace BeerBot
                             await dc.Replace(DialogIds.GetExactBeerName);
                             break;
                         case 1:
-                            await dc.End(new Dictionary<string, object> {{InputArgs.BeerName, beers[0].Name}});
+                            await dc.End(new Dictionary<string, object> {{ArgNames.BeerName, beers[0].Name}});
                             break;
                         default:
                         {
@@ -119,7 +124,7 @@ namespace BeerBot
                 async (dc, args, next) =>
                 {
                     var beerChoice = (FoundChoice) args["Value"];
-                    await dc.End(new Dictionary<string, object> {{InputArgs.BeerName, beerChoice.Value}});
+                    await dc.End(new Dictionary<string, object> {{ArgNames.BeerName, beerChoice.Value}});
                 }
             });
         }
@@ -135,10 +140,20 @@ namespace BeerBot
             {
                 async (dc, args, next) =>
                 {
-                    dc.ActiveDialog.State[orderStateEntry] = new BeerOrder();
-                    if (args != null && args.TryGetValue(InputArgs.BeerName, out object beerName))
+                    BeerOrder beerOrder;
+                    if (args != null && args.TryGetValue(InputArgs.BeerOrder, out object beerOrderObject))
                     {
-                        await dc.Begin(DialogIds.GetExactBeerName, new Dictionary<string, object> {{InputArgs.BeerName, beerName} });
+                        beerOrder = (BeerOrder) beerOrderObject;
+                    }
+                    else
+                    {
+                        beerOrder = new BeerOrder();
+                    }
+
+                    dc.ActiveDialog.State[orderStateEntry] = beerOrder;
+                    if (!string.IsNullOrEmpty(beerOrder.BeerName))
+                    {
+                        await dc.Begin(DialogIds.GetExactBeerName, new Dictionary<string, object> {{ArgNames.BeerName, beerOrder.BeerName}});
                     }
                     else
                     {
@@ -148,10 +163,11 @@ namespace BeerBot
                 async (dc, args, next) =>
                 {
                     var beerOrder = (BeerOrder) dc.ActiveDialog.State[orderStateEntry];
-                    beerOrder.BeerName = (string) args[InputArgs.BeerName];
+                    beerOrder.BeerName = (string) args[ArgNames.BeerName];
 
                     if (beerOrder.Chaser != 0)
                     {
+                        await next();
                         return;
                     }
 
@@ -172,6 +188,7 @@ namespace BeerBot
 
                     if (beerOrder.Side != 0)
                     {
+                        await next();
                         return;
                     }
 
