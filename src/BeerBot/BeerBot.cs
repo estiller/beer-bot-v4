@@ -2,9 +2,11 @@
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using BeerBot.BeerApiClient;
+using BeerBot.Emojis;
 using BeerBot.Services;
 using Microsoft.Bot;
 using Microsoft.Bot.Builder;
+using Microsoft.Bot.Builder.Ai.LUIS;
 using Microsoft.Bot.Builder.Core.Extensions;
 using Microsoft.Bot.Builder.Dialogs;
 using Microsoft.Bot.Schema;
@@ -46,25 +48,33 @@ namespace BeerBot
 
             if (!context.Responded)
             {
-                switch (context.Activity.Text)
+                var luisResult = context.Services.Get<RecognizerResult>(LuisRecognizerMiddleware.LuisRecognizerResultKey);
+                var topIntent = luisResult?.GetTopScoringIntent();
+
+                switch (topIntent != null ? topIntent.Value.intent.ToLowerInvariant() : null)
                 {
-                    case var text when Regex.IsMatch(text, "^(hi|hello|hola).*", RegexOptions.IgnoreCase):
+                    case "greet":
                         await dc.Begin(BeerDialogs.Dialogs.Greet);
                         break;
-                    case var text when Regex.IsMatch(text, ".*random.*", RegexOptions.IgnoreCase):
+                    case "randombeer":
                         await dc.Begin(BeerDialogs.Dialogs.RandomBeer);
                         break;
-                    case var text when Regex.IsMatch(text, ".*recommend.*", RegexOptions.IgnoreCase):
+                    case "recommendbeer":
                         await dc.Begin(BeerDialogs.Dialogs.RecommendBeer);
                         break;
-                    case var text when Regex.IsMatch(text, ".*order.*", RegexOptions.IgnoreCase):
+                    case "orderbeer":
                         await dc.Begin(BeerDialogs.Dialogs.OrderBeer);
                         break;
-                    case var text when Regex.IsMatch(text, ".*help.*", RegexOptions.IgnoreCase):
+                    case "gethelp":
                         await dc.Begin(BeerDialogs.Dialogs.MainMenu);
                         break;
-                    case var text when Regex.IsMatch(text, "^(bye|exit|adios).*", RegexOptions.IgnoreCase):
+                    case "bye":
                         await dc.Begin(BeerDialogs.Dialogs.Exit);
+                        break;
+                    case "none":
+                        break;
+                    default:
+                        await context.SendActivity($"Something must be wrong with my language circuits... {Emoji.Coffee}");
                         break;
                 }
             }

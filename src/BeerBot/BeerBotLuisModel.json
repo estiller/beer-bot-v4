@@ -1,0 +1,424 @@
+{
+  "luis_schema_version": "3.0.0",
+  "versionId": "0.1",
+  "name": "BeerBot",
+  "desc": "",
+  "culture": "en-us",
+  "intents": [
+    {
+      "name": "Bye"
+    },
+    {
+      "name": "GetHelp"
+    },
+    {
+      "name": "Greet"
+    },
+    {
+      "name": "None"
+    },
+    {
+      "name": "OrderBeer"
+    },
+    {
+      "name": "RandomBeer"
+    },
+    {
+      "name": "RecommendBeer"
+    }
+  ],
+  "entities": [
+    {
+      "name": "beername",
+      "roles": []
+    }
+  ],
+  "composites": [
+    {
+      "name": "beerorder",
+      "children": [
+        "beername",
+        "chaser",
+        "sidedish"
+      ],
+      "roles": []
+    }
+  ],
+  "closedLists": [
+    {
+      "name": "chaser",
+      "subLists": [
+        {
+          "canonicalForm": "whiskey",
+          "list": [
+            "bourbon",
+            "scotch"
+          ]
+        },
+        {
+          "canonicalForm": "vodka",
+          "list": []
+        },
+        {
+          "canonicalForm": "liquor",
+          "list": []
+        },
+        {
+          "canonicalForm": "water",
+          "list": []
+        }
+      ],
+      "roles": []
+    },
+    {
+      "name": "sidedish",
+      "subLists": [
+        {
+          "canonicalForm": "fries",
+          "list": [
+            "chips",
+            "fried potatoes"
+          ]
+        },
+        {
+          "canonicalForm": "pretzels",
+          "list": []
+        },
+        {
+          "canonicalForm": "nachos",
+          "list": []
+        }
+      ],
+      "roles": []
+    }
+  ],
+  "patternAnyEntities": [],
+  "regex_entities": [],
+  "prebuiltEntities": [],
+  "model_features": [],
+  "regex_features": [],
+  "patterns": [],
+  "utterances": [
+    {
+      "text": "adios",
+      "intent": "Bye",
+      "entities": []
+    },
+    {
+      "text": "bye",
+      "intent": "Bye",
+      "entities": []
+    },
+    {
+      "text": "bye bye",
+      "intent": "Bye",
+      "entities": []
+    },
+    {
+      "text": "can you recommend a beer for me?",
+      "intent": "RecommendBeer",
+      "entities": []
+    },
+    {
+      "text": "can you recommend on a beer",
+      "intent": "RecommendBeer",
+      "entities": []
+    },
+    {
+      "text": "do you have any beers?",
+      "intent": "RecommendBeer",
+      "entities": []
+    },
+    {
+      "text": "give me a beer",
+      "intent": "OrderBeer",
+      "entities": []
+    },
+    {
+      "text": "give me a budweiser with vodka and fries",
+      "intent": "OrderBeer",
+      "entities": [
+        {
+          "entity": "beername",
+          "startPos": 10,
+          "endPos": 18
+        },
+        {
+          "entity": "beerorder",
+          "startPos": 10,
+          "endPos": 39
+        }
+      ]
+    },
+    {
+      "text": "give me a random beer",
+      "intent": "RandomBeer",
+      "entities": []
+    },
+    {
+      "text": "give me some beer with fries and water",
+      "intent": "OrderBeer",
+      "entities": [
+        {
+          "entity": "beerorder",
+          "startPos": 23,
+          "endPos": 37
+        }
+      ]
+    },
+    {
+      "text": "goodbye",
+      "intent": "Bye",
+      "entities": []
+    },
+    {
+      "text": "hello",
+      "intent": "Greet",
+      "entities": []
+    },
+    {
+      "text": "help",
+      "intent": "GetHelp",
+      "entities": []
+    },
+    {
+      "text": "help me please",
+      "intent": "GetHelp",
+      "entities": []
+    },
+    {
+      "text": "hey there",
+      "intent": "Greet",
+      "entities": []
+    },
+    {
+      "text": "hey there! how are you?",
+      "intent": "Greet",
+      "entities": []
+    },
+    {
+      "text": "hi",
+      "intent": "Greet",
+      "entities": []
+    },
+    {
+      "text": "howdy",
+      "intent": "Greet",
+      "entities": []
+    },
+    {
+      "text": "i just want something",
+      "intent": "RandomBeer",
+      "entities": []
+    },
+    {
+      "text": "i want a beer",
+      "intent": "OrderBeer",
+      "entities": []
+    },
+    {
+      "text": "i want a heineken",
+      "intent": "OrderBeer",
+      "entities": [
+        {
+          "entity": "beername",
+          "startPos": 9,
+          "endPos": 16
+        },
+        {
+          "entity": "beerorder",
+          "startPos": 9,
+          "endPos": 16
+        }
+      ]
+    },
+    {
+      "text": "i want a heineken and some pretzels",
+      "intent": "OrderBeer",
+      "entities": [
+        {
+          "entity": "beername",
+          "startPos": 9,
+          "endPos": 16
+        },
+        {
+          "entity": "beerorder",
+          "startPos": 9,
+          "endPos": 34
+        }
+      ]
+    },
+    {
+      "text": "i want a random beer",
+      "intent": "RandomBeer",
+      "entities": []
+    },
+    {
+      "text": "i want an american beer please with fries and vodka",
+      "intent": "OrderBeer",
+      "entities": [
+        {
+          "entity": "beerorder",
+          "startPos": 36,
+          "endPos": 50
+        }
+      ]
+    },
+    {
+      "text": "i would like a beer with vodka and pretzels",
+      "intent": "OrderBeer",
+      "entities": [
+        {
+          "entity": "beername",
+          "startPos": 15,
+          "endPos": 18
+        },
+        {
+          "entity": "beerorder",
+          "startPos": 15,
+          "endPos": 42
+        }
+      ]
+    },
+    {
+      "text": "i would like a heineken with fries",
+      "intent": "OrderBeer",
+      "entities": [
+        {
+          "entity": "beername",
+          "startPos": 15,
+          "endPos": 22
+        },
+        {
+          "entity": "beerorder",
+          "startPos": 15,
+          "endPos": 33
+        }
+      ]
+    },
+    {
+      "text": "i would like a tuborg with vodka and fries",
+      "intent": "OrderBeer",
+      "entities": [
+        {
+          "entity": "beername",
+          "startPos": 15,
+          "endPos": 20
+        },
+        {
+          "entity": "beerorder",
+          "startPos": 15,
+          "endPos": 41
+        }
+      ]
+    },
+    {
+      "text": "i would like to order beer with chips",
+      "intent": "OrderBeer",
+      "entities": [
+        {
+          "entity": "beerorder",
+          "startPos": 32,
+          "endPos": 36
+        }
+      ]
+    },
+    {
+      "text": "i'd like an edelweiss beer with whiskey and pretzels",
+      "intent": "OrderBeer",
+      "entities": [
+        {
+          "entity": "beername",
+          "startPos": 12,
+          "endPos": 20
+        },
+        {
+          "entity": "beerorder",
+          "startPos": 12,
+          "endPos": 51
+        }
+      ]
+    },
+    {
+      "text": "i'd like to order",
+      "intent": "OrderBeer",
+      "entities": []
+    },
+    {
+      "text": "i'd like to order a beer",
+      "intent": "OrderBeer",
+      "entities": []
+    },
+    {
+      "text": "i'd like to order a tuborg and nachos",
+      "intent": "OrderBeer",
+      "entities": [
+        {
+          "entity": "beername",
+          "startPos": 20,
+          "endPos": 25
+        },
+        {
+          "entity": "beerorder",
+          "startPos": 20,
+          "endPos": 36
+        }
+      ]
+    },
+    {
+      "text": "i'm feeling lucky",
+      "intent": "RandomBeer",
+      "entities": []
+    },
+    {
+      "text": "i'm leaving",
+      "intent": "Bye",
+      "entities": []
+    },
+    {
+      "text": "lucky",
+      "intent": "RandomBeer",
+      "entities": []
+    },
+    {
+      "text": "options",
+      "intent": "GetHelp",
+      "entities": []
+    },
+    {
+      "text": "random",
+      "intent": "RandomBeer",
+      "entities": []
+    },
+    {
+      "text": "see u later",
+      "intent": "Bye",
+      "entities": []
+    },
+    {
+      "text": "see you later",
+      "intent": "Bye",
+      "entities": []
+    },
+    {
+      "text": "what are my options?",
+      "intent": "GetHelp",
+      "entities": []
+    },
+    {
+      "text": "what can i do here?",
+      "intent": "GetHelp",
+      "entities": []
+    },
+    {
+      "text": "what do you recommend?",
+      "intent": "RecommendBeer",
+      "entities": []
+    },
+    {
+      "text": "what do you think i should get?",
+      "intent": "RecommendBeer",
+      "entities": []
+    }
+  ]
+}
