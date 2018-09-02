@@ -62,7 +62,10 @@ namespace BeerBot
                 async (dc, args, next) =>
                 {
                     string usualBeer = dc.Context.GetUserState<UserInfo>().UsualBeer;
-                    await dc.Prompt(Inputs.Confirm, $"Would you like your usual {usualBeer}?");
+                    await dc.Prompt(Inputs.Confirm, $"Would you like your usual {usualBeer}?", new PromptOptions
+                    {
+                        Speak = $"Would you like your usual {usualBeer}?"
+                    });
                 },
                 async (dc, args, next) =>
                 {
@@ -74,7 +77,10 @@ namespace BeerBot
                     }
                     else
                     {
-                        await dc.Prompt(Inputs.Text, "So what can I offer you instead?");
+                        await dc.Prompt(Inputs.Text, "So what can I offer you instead?", new PromptOptions
+                        {
+                            Speak = "So what can I offer you instead?"
+                        });
                     }
                 },
             });
@@ -93,7 +99,10 @@ namespace BeerBot
                     }
                     else
                     {
-                        await dc.Prompt(Inputs.Text, "What beer would you like to order?");
+                        await dc.Prompt(Inputs.Text, "What beer would you like to order?", new PromptOptions
+                        {
+                            Speak = "What beer would you like to order?"
+                        });
                     }
                 },
                 async (dc, args, next) =>
@@ -103,7 +112,9 @@ namespace BeerBot
                     switch (beers.Count)
                     {
                         case 0:
-                            await dc.Context.SendActivity($"Oops! I haven't found any beer! {Emoji.Disappointed}");
+                            await dc.Context.SendActivity(
+                                $"Oops! I haven't found any beer! {Emoji.Disappointed}",
+                                "Oops! I haven't found any beer!");
                             await dc.Replace(DialogIds.GetExactBeerName);
                             break;
                         case 1:
@@ -115,7 +126,9 @@ namespace BeerBot
                             await dc.Prompt(Inputs.Choice, "I'm not sure which one", new ChoicePromptOptions
                             {
                                 Choices = choices,
-                                RetryPromptString = "I probably drank too much. I'm not sure which one."
+                                Speak = "I'm not sure which one",
+                                RetryPromptString = "I probably drank too much. I'm not sure which one.",
+                                RetrySpeak = "I probably drank too much. I'm not sure which one."
                             });
                             break;
                         }
@@ -174,7 +187,9 @@ namespace BeerBot
                     await dc.Prompt(Inputs.Choice, "Which chaser would you like next to your beer?", new ChoicePromptOptions
                     {
                         Choices = ChoiceFactory.ToChoices(PossibleChasers),
-                        RetryPromptString = "I probably drank too much. Which chaser would you like next to your beer?"
+                        Speak = "Which chaser would you like next to your beer?",
+                        RetryPromptString = "I probably drank too much. Which chaser would you like next to your beer?",
+                        RetrySpeak = "I probably drank too much. Which chaser would you like next to your beer?"
                     });
                 },
                 async (dc, args, next) =>
@@ -195,7 +210,9 @@ namespace BeerBot
                     await dc.Prompt(Inputs.Choice, "How about something to eat?", new ChoicePromptOptions
                     {
                         Choices = ChoiceFactory.ToChoices(PossibleSideDishs),
-                        RetryPromptString = "I probably drank too much. Which side dish would you like next to your beer?"
+                        Speak = "How about something to eat?",
+                        RetryPromptString = "I probably drank too much. Which side dish would you like next to your beer?",
+                        RetrySpeak = "I probably drank too much. Which side dish would you like next to your beer?"
                     });
                 },
                 async (dc, args, next) =>
@@ -208,7 +225,11 @@ namespace BeerBot
                     }
 
                     await dc.Prompt(Inputs.Confirm,
-                        $"Just to make sure, do you want a {beerOrder.BeerName} beer with {beerOrder.Chaser} and some {beerOrder.Side} on the side?");
+                        $"Just to make sure, do you want a {beerOrder.BeerName} beer with {beerOrder.Chaser} and some {beerOrder.Side} on the side?",
+                        new PromptOptions
+                        {
+                            Speak = $"Just to make sure, do you want a {beerOrder.BeerName} beer with {beerOrder.Chaser} and some {beerOrder.Side} on the side?"
+                        });
                 },
                 async (dc, args, next) =>
                 {
@@ -217,11 +238,11 @@ namespace BeerBot
                     {
                         var beerOrder = (BeerOrder) dc.ActiveDialog.State[orderStateEntry];
                         dc.Context.GetUserState<UserInfo>().UsualBeer = beerOrder.BeerName;
-                        await dc.Context.SendActivity($"Cheers {Emoji.Beers}");
+                        await dc.Context.SendActivity($"Cheers {Emoji.Beers}", "Cheers!");
                     }
                     else
                     {
-                        await dc.Context.SendActivity($"Maybe I'll get it right next time {Emoji.Confused}");
+                        await dc.Context.SendActivity($"Maybe I'll get it right next time {Emoji.Confused}", "Maybe I'll get it right next time");
                     }
                 }
             });

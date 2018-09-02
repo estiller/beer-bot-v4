@@ -53,7 +53,9 @@ namespace BeerBot
                     await dc.Prompt(Inputs.Choice, "How can I help you?", new ChoicePromptOptions
                     {
                         Choices = DialogMenu.Choices,
-                        RetryPromptString = "Please choose an option"
+                        Speak = "How can I help you?",
+                        RetryPromptString = "Please choose an option",
+                        RetrySpeak = "Please choose an option"
                     });
                 },
                 async (dc, args, next) =>
@@ -69,14 +71,19 @@ namespace BeerBot
             {
                 async (dc, args, next) =>
                 {
-                    await dc.Prompt(Inputs.Text, "Welcome to your friendly neighborhood bot-tender! How can I help?");
+                    await dc.Prompt(Inputs.Text, "Welcome to your friendly neighborhood bot-tender! How can I help?", new PromptOptions
+                    {
+                        Speak = "Welcome to your friendly neighborhood bot-tender! How can I help?"
+                    });
                 },
                 async (dc, args, next) =>
                 {
                     var text = (string)args["Text"];
                     if (Regex.IsMatch(text, "^(hi|hello|hola).*", RegexOptions.IgnoreCase))
                     {
-                        await dc.Context.SendActivity("I feel like we already know each other! How can I help?");
+                        await dc.Context.SendActivity(
+                            "I feel like we already know each other! How can I help?",
+                            "I feel like we already know each other! How can I help?");
                     }
                 },
             });
@@ -86,7 +93,9 @@ namespace BeerBot
                 async (dc, args, next) =>
                 {
                     var beer = await beerService.BeersRandomGetAsync();
-                    await dc.Context.SendActivity($"You should definitely get a {beer.Name}");
+                    await dc.Context.SendActivity(
+                        $"You should definitely get a {beer.Name}", 
+                        $"You should definitely get a {beer.Name}");
                 },
             });
 
@@ -99,7 +108,10 @@ namespace BeerBot
                     if (args != null && args.TryGetValue(RecommendBeerDialog.OutputArgs.RecommendedBeerName, out object recommendBeerName))
                     {
                         dc.ActiveDialog.State[RecommendBeerDialog.OutputArgs.RecommendedBeerName] = recommendBeerName;
-                        await dc.Prompt(Inputs.Confirm, "Would you like to make an order?");
+                        await dc.Prompt(Inputs.Confirm, "Would you like to make an order?", new PromptOptions
+                        {
+                            Speak = "Would you like to make an order?"
+                        });
                     }
                     else
                     {
@@ -119,7 +131,7 @@ namespace BeerBot
                     }
                     else
                     {
-                        await dc.Context.SendActivity($"Maybe next time {Emoji.Pray}");
+                        await dc.Context.SendActivity($"Maybe next time {Emoji.Pray}", "Maybe next time");
                     }
                 },
             });
@@ -130,7 +142,7 @@ namespace BeerBot
             {
                 async (dc, args, next) =>
                 {
-                    await dc.Context.SendActivity($"So soon? Oh well. See you later {Emoji.Wave}");
+                    await dc.Context.SendActivity($"So soon? Oh well. See you later {Emoji.Wave}", "So soon? Oh well. See you later!");
                 },
             });
         }

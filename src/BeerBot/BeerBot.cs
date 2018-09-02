@@ -34,7 +34,9 @@ namespace BeerBot
                     await HandleMessage(context);
                     if (!context.Responded)
                     {
-                        await context.SendActivity("I didn't quite understand what you are saying! You can type \"help\" for more information");
+                        await context.SendActivity(
+                            "I didn't quite understand what you are saying! You can type \"help\" for more information",
+                            "I didn't quite understand what you are saying! You can type \"help\" for more information");
                     }
                     break;
                 case ActivityTypes.ConversationUpdate:
@@ -94,7 +96,9 @@ namespace BeerBot
                     case BeerBotLuisModel.Intent.None:
                         break;
                     default:
-                        await context.SendActivity($"Something must be wrong with my language circuits... {Emoji.Coffee}");
+                        await context.SendActivity(
+                            $"Something must be wrong with my language circuits... {Emoji.Coffee}",
+                            "Something must be wrong with my language circuits...");
                         break;
                 }
             }
@@ -105,7 +109,7 @@ namespace BeerBot
             var newMember = context.Activity.MembersAdded.FirstOrDefault();
             if (newMember != null && newMember.Id != context.Activity.Recipient.Id && !string.IsNullOrWhiteSpace(newMember.Name))
             {
-                return context.SendActivity($"Howdy {newMember.Name}!");
+                return context.SendActivity($"Howdy {newMember.Name}!", $"Howdy {newMember.Name}!");
             }
 
             return Task.CompletedTask;

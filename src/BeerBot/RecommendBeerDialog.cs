@@ -14,7 +14,6 @@ using Microsoft.Bot.Builder.Prompts;
 using Microsoft.Bot.Builder.Prompts.Choices;
 using Microsoft.Bot.Schema;
 using Microsoft.Recognizers.Text;
-using Activity = Microsoft.Bot.Schema.Activity;
 using ChoicePrompt = Microsoft.Bot.Builder.Dialogs.ChoicePrompt;
 using ConfirmPrompt = Microsoft.Bot.Builder.Dialogs.ConfirmPrompt;
 using TextPrompt = Microsoft.Bot.Builder.Dialogs.TextPrompt;
@@ -72,7 +71,9 @@ namespace BeerBot
                     await dc.Prompt(Inputs.Choice, "How would you like me to recommend your beer?", new ChoicePromptOptions
                     {
                         Choices = RecommendationMenu.Choices,
-                        RetryPromptString = "Not sure I got it. Could you try again?"
+                        Speak = "How would you like me to recommend your beer? By category, by origin, or by name?",
+                        RetryPromptString = "Not sure I got it. Could you try again?",
+                        RetrySpeak = "Not sure I got it. By category, by origin, or by name?"
                     });
                 },
                 async (dc, args, next) =>
@@ -104,7 +105,13 @@ namespace BeerBot
 
             Dialogs.Add(DialogIds.ByName, new WaterfallStep[]
             {
-                async (dc, args, next) => { await dc.Prompt(beerPrompt, "Do you remember the name? Give me what you remember"); },
+                async (dc, args, next) =>
+                {
+                    await dc.Prompt(beerPrompt, "Do you remember the name? Give me what you remember", new PromptOptions
+                    {
+                        Speak = "Do you remember the name? Give me what you remember"
+                    });
+                },
                 async (dc, args, next) =>
                 {
                     var beers = (IList<Beer>) args[ArgNames.Beers];
@@ -117,7 +124,9 @@ namespace BeerBot
                 if (result.Value.Length <= 2)
                 {
                     result.Status = PromptStatus.NotRecognized;
-                    await context.SendActivity("Beer name should be at least 3 characters long.");
+                    await context.SendActivity(
+                        "Beer name should be at least 3 characters long.",
+                        "Beer name should be at least 3 characters long.");
                     return;
                 }
 
@@ -125,7 +134,9 @@ namespace BeerBot
                 if (beers.Count == 0)
                 {
                     result.Status = PromptStatus.NotRecognized;
-                    await context.SendActivity("Oops! I haven't found any beer!");
+                    await context.SendActivity(
+                        "Oops! I haven't found any beer!", 
+                        "Oops! I haven't found any beer!");
                     return;
                 }
 
@@ -145,7 +156,9 @@ namespace BeerBot
                     await dc.Prompt(Inputs.Choice, "Where would you like your beer from?", new ChoicePromptOptions
                     {
                         Choices = ChoiceFactory.ToChoices(countries.Random(5)),
-                        RetryPromptString = "I probably drank too much. Where would you like your beer from?"
+                        Speak = "Where would you like your beer from?",
+                        RetryPromptString = "I probably drank too much. Where would you like your beer from?",
+                        RetrySpeak = "I probably drank too much. Where would you like your beer from?"
                     });
                 },
                 async (dc, args, next) =>
@@ -157,7 +170,9 @@ namespace BeerBot
                     Debug.Assert(breweries.Count > 0, "There is no country in the list with zero breweries!");
                     if (breweries.Count == 1)
                     {
-                        await dc.Context.SendActivity($"Then you need a beer made by '{breweries[0].Name}'!");
+                        await dc.Context.SendActivity(
+                            $"Then you need a beer made by '{breweries[0].Name}'!",
+                            $"Then you need a beer made by '{breweries[0].Name}'!");
                         await next(new Dictionary<string, object>
                         {
                             {"Value", new FoundChoice {Value = breweries[0].Name, Index = 0, Score = 1}}
@@ -168,7 +183,9 @@ namespace BeerBot
                     await dc.Prompt(Inputs.Choice, "Which brewery?", new ChoicePromptOptions
                     {
                         Choices = ChoiceFactory.ToChoices(breweries.Select(brewery => brewery.Name).ToList()),
-                        RetryPromptString = "I probably drank too much. Which brewery was it?"
+                        Speak = "Which brewery?",
+                        RetryPromptString = "I probably drank too much. Which brewery was it?",
+                        RetrySpeak = "I probably drank too much. Which brewery was it?"
                     });
                 },
                 async (dc, args, next) =>
@@ -196,7 +213,9 @@ namespace BeerBot
                     await dc.Prompt(Inputs.Choice, "Which kind of beer do you like?", new ChoicePromptOptions
                     {
                         Choices = ChoiceFactory.ToChoices(categories.Select(category => category.Name).ToList()),
-                        RetryPromptString = "I probably drank too much. Which beer type was it?"
+                        Speak = "Which kind of beer do you like?",
+                        RetryPromptString = "I probably drank too much. Which beer type was it?",
+                        RetrySpeak = "I probably drank too much. Which beer type was it?"
                     });
                 },
                 async (dc, args, next) =>
@@ -209,7 +228,9 @@ namespace BeerBot
                     await dc.Prompt(Inputs.Choice, "Which style?", new ChoicePromptOptions
                     {
                         Choices = ChoiceFactory.ToChoices(styles.Select(style => style.Name).ToList()),
-                        RetryPromptString = "I probably drank too much. Which style was it?"
+                        Speak = "Which style?",
+                        RetryPromptString = "I probably drank too much. Which style was it?",
+                        RetrySpeak = "I probably drank too much. Which style was it?"
                     });
                 },
                 async (dc, args, next) =>
@@ -233,7 +254,9 @@ namespace BeerBot
                     switch (beers.Count)
                     {
                         case 0:
-                            await dc.Context.SendActivity($"Oops! I haven't found any beer! Better luck next time {Emoji.Four_Leaf_Clover}");
+                            await dc.Context.SendActivity(
+                                $"Oops! I haven't found any beer! Better luck next time {Emoji.Four_Leaf_Clover}",
+                                "Oops! I haven't found any beer! Better luck next time");
                             await dc.End();
                             break;
                         case 1:
@@ -245,7 +268,9 @@ namespace BeerBot
                             await dc.Prompt(Inputs.Choice, "Which one of these works?", new ChoicePromptOptions
                             {
                                 Choices = choices,
-                                RetryPromptString = "I probably drank too much. Which one of these work?"
+                                Speak = "Which one of these works?",
+                                RetryPromptString = "I probably drank too much. Which one of these work?",
+                                RetrySpeak = "I probably drank too much. Which one of these work?"
                             });
                             break;
                         }
@@ -257,7 +282,10 @@ namespace BeerBot
                     dc.ActiveDialog.State[OutputArgs.RecommendedBeerName] = choice.Value;
                     if (choice.Score < 0.7)
                     {
-                        await dc.Prompt(Inputs.Confirm, $"Just making sure I got it right. Do you want a '{choice.Value}'?");
+                        await dc.Prompt(Inputs.Confirm, $"Just making sure I got it right. Do you want a '{choice.Value}'?", new PromptOptions
+                        {
+                            Speak = $"Just making sure I got it right. Do you want a '{choice.Value}'?"
+                        });
                     }
                     else
                     {
@@ -274,7 +302,7 @@ namespace BeerBot
                     }
                     else
                     {
-                        await dc.Context.SendActivity($"Too bad {Emoji.Disappointed}");
+                        await dc.Context.SendActivity($"Too bad {Emoji.Disappointed}", "Too bad");
                     }
                 }
             });
@@ -293,8 +321,9 @@ namespace BeerBot
                             images: new[] {new CardImage(imageUrl.ToString())}
                         )
                         .ToAttachment());
+                activity.Speak = $"Your Beer - {beerName}";
                 await dc.Context.SendActivity(activity);
-                await dc.Context.SendActivity($"Glad I could help {Emoji.Beer}");
+                await dc.Context.SendActivity($"Glad I could help {Emoji.Beer}", "Glad I could help!");
                 await dc.End(new Dictionary<string, object> {{OutputArgs.RecommendedBeerName, beerName}});
             }
         }

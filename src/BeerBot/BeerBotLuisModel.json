@@ -212,9 +212,30 @@
       "entities": []
     },
     {
+      "text": "i said hi",
+      "intent": "Greet",
+      "entities": []
+    },
+    {
       "text": "i want a beer",
       "intent": "OrderBeer",
       "entities": []
+    },
+    {
+      "text": "i want a carlsberg and fries",
+      "intent": "OrderBeer",
+      "entities": [
+        {
+          "entity": "beername",
+          "startPos": 9,
+          "endPos": 17
+        },
+        {
+          "entity": "beerorder",
+          "startPos": 9,
+          "endPos": 27
+        }
+      ]
     },
     {
       "text": "i want a heineken",
@@ -249,9 +270,57 @@
       ]
     },
     {
+      "text": "i want a heineken with fries",
+      "intent": "OrderBeer",
+      "entities": [
+        {
+          "entity": "beername",
+          "startPos": 9,
+          "endPos": 16
+        },
+        {
+          "entity": "beerorder",
+          "startPos": 9,
+          "endPos": 27
+        }
+      ]
+    },
+    {
+      "text": "i want a heineken with water",
+      "intent": "OrderBeer",
+      "entities": [
+        {
+          "entity": "beername",
+          "startPos": 9,
+          "endPos": 16
+        },
+        {
+          "entity": "beerorder",
+          "startPos": 9,
+          "endPos": 27
+        }
+      ]
+    },
+    {
       "text": "i want a random beer",
       "intent": "RandomBeer",
       "entities": []
+    },
+    {
+      "text": "i want a stella with water",
+      "intent": "OrderBeer",
+      "entities": [
+        {
+          "entity": "beername",
+          "startPos": 9,
+          "endPos": 14
+        },
+        {
+          "entity": "beerorder",
+          "startPos": 9,
+          "endPos": 25
+        }
+      ]
     },
     {
       "text": "i want an american beer please with fries and vodka",
@@ -324,6 +393,22 @@
       ]
     },
     {
+      "text": "i'd like a heineken with some vodka",
+      "intent": "OrderBeer",
+      "entities": [
+        {
+          "entity": "beername",
+          "startPos": 11,
+          "endPos": 18
+        },
+        {
+          "entity": "beerorder",
+          "startPos": 11,
+          "endPos": 34
+        }
+      ]
+    },
+    {
       "text": "i'd like an edelweiss beer with whiskey and pretzels",
       "intent": "OrderBeer",
       "entities": [
@@ -384,6 +469,54 @@
       "text": "options",
       "intent": "GetHelp",
       "entities": []
+    },
+    {
+      "text": "order a heineken with fries",
+      "intent": "OrderBeer",
+      "entities": [
+        {
+          "entity": "beername",
+          "startPos": 8,
+          "endPos": 15
+        },
+        {
+          "entity": "beerorder",
+          "startPos": 8,
+          "endPos": 26
+        }
+      ]
+    },
+    {
+      "text": "order a heineken with vodka",
+      "intent": "OrderBeer",
+      "entities": [
+        {
+          "entity": "beername",
+          "startPos": 8,
+          "endPos": 15
+        },
+        {
+          "entity": "beerorder",
+          "startPos": 8,
+          "endPos": 26
+        }
+      ]
+    },
+    {
+      "text": "order heineken",
+      "intent": "OrderBeer",
+      "entities": [
+        {
+          "entity": "beerorder",
+          "startPos": 6,
+          "endPos": 13
+        },
+        {
+          "entity": "beername",
+          "startPos": 6,
+          "endPos": 13
+        }
+      ]
     },
     {
       "text": "random",
