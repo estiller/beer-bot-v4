@@ -1,9 +1,9 @@
 ﻿using System.Linq;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Threading.Tasks;
 using BeerBot.BeerApiClient;
 using BeerBot.Emojis;
-using Microsoft.Bot;
 using Microsoft.Bot.Builder;
 using Microsoft.Bot.Schema;
 
@@ -18,50 +18,52 @@ namespace BeerBot
             _beerService = beerService;
         }
 
-        public async Task OnTurn(ITurnContext context)
+        public async Task OnTurnAsync(ITurnContext turnContext, CancellationToken cancellationToken = default(CancellationToken))
         {
-            switch (context.Activity.Type)
+            switch (turnContext.Activity.Type)
             {
                 case ActivityTypes.Message:
-                    await HandleMessage(context);
-                    if (!context.Responded)
+                    await HandleMessageAsync(turnContext, cancellationToken);
+                    if (!turnContext.Responded)
                     {
-                        await context.SendActivity("I didn't quite understand what you are saying! You can type \"help\" for more information");
+                        await turnContext.SendActivityAsync(
+                            "I didn't quite understand what you are saying! You can type \"help\" for more information",
+                            cancellationToken: cancellationToken);
                     }
                     break;
                 case ActivityTypes.ConversationUpdate:
-                    await GreetAddedMembers(context);
+                    await GreetAddedMembersAsync(turnContext, cancellationToken);
                     break;
             }
 
         }
 
-        private async Task HandleMessage(ITurnContext context)
+        private async Task HandleMessageAsync(ITurnContext turnContext, CancellationToken cancellationToken)
         {
-            switch (context.Activity.Text)
+            switch (turnContext.Activity.Text)
             {
                 case var text when Regex.IsMatch(text, "^(hi|hello|hola).*", RegexOptions.IgnoreCase):
-                    await context.SendActivity("Welcome to your friendly neighborhood bot-tender! How can I help you?");
+                    await turnContext.SendActivityAsync("Welcome to your friendly neighborhood bot-tender! How can I help you?", cancellationToken: cancellationToken);
                     break;
                 case var text when Regex.IsMatch(text, ".*random.*", RegexOptions.IgnoreCase):
-                    var beer = await _beerService.BeersRandomGetAsync();
-                    await context.SendActivity($"You should definitely get a {beer.Name}");
+                    var beer = await _beerService.BeersRandomGetAsync(cancellationToken);
+                    await turnContext.SendActivityAsync($"You should definitely get a {beer.Name}", cancellationToken: cancellationToken);
                     break;
                 case var text when Regex.IsMatch(text, ".*help.*", RegexOptions.IgnoreCase):
-                    await context.SendActivity("You can type 'random' for getting a beer recommendation");
+                    await turnContext.SendActivityAsync("You can type 'random' for getting a beer recommendation", cancellationToken: cancellationToken);
                     break;
                 case var text when Regex.IsMatch(text, "^(bye|exit|adios).*", RegexOptions.IgnoreCase):
-                    await context.SendActivity($"So soon? Oh well. See you later {Emoji.Wave}");
+                    await turnContext.SendActivityAsync($"So soon? Oh well. See you later {Emoji.Wave}", cancellationToken: cancellationToken);
                     break;
             }
         }
 
-        private Task GreetAddedMembers(ITurnContext context)
+        private Task GreetAddedMembersAsync(ITurnContext turnContext, CancellationToken cancellationToken)
         {
-            var newMember = context.Activity.MembersAdded.FirstOrDefault();
-            if (newMember != null && newMember.Id != context.Activity.Recipient.Id && !string.IsNullOrWhiteSpace(newMember.Name))
+            var newMember = turnContext.Activity.MembersAdded.FirstOrDefault();
+            if (newMember != null && newMember.Id != turnContext.Activity.Recipient.Id && !string.IsNullOrWhiteSpace(newMember.Name))
             {
-                return context.SendActivity($"Howdy {newMember.Name}!");
+                return turnContext.SendActivityAsync($"Howdy {newMember.Name}!", cancellationToken: cancellationToken);
             }
 
             return Task.CompletedTask;
