@@ -3,26 +3,17 @@ using System.Collections.Generic;
 using System.Linq;
 using BeerBot.BeerApiClient;
 using BeerBot.Emojis;
+using Microsoft.Bot.Builder;
 using Microsoft.Bot.Builder.Dialogs;
-using Microsoft.Bot.Builder.Prompts.Choices;
-using Microsoft.Recognizers.Text;
-using ChoicePrompt = Microsoft.Bot.Builder.Dialogs.ChoicePrompt;
-using ConfirmPrompt = Microsoft.Bot.Builder.Dialogs.ConfirmPrompt;
-using TextPrompt = Microsoft.Bot.Builder.Dialogs.TextPrompt;
+using Microsoft.Bot.Builder.Dialogs.Choices;
 
 namespace BeerBot
 {
-    public class OrderBeerDialog : DialogContainer
+    public class OrderBeerDialog : ComponentDialog
     {
-        public const string Id = "orderBeer";
-
-        public static class InputArgs
-        {
-            public const string BeerName = "beerName";
-        }
-
         private static class DialogIds
         {
+            public const string Main = "main";
             public const string GetExactBeerName = "getExactBeerName";
         }
 
@@ -35,13 +26,13 @@ namespace BeerBot
 
         private readonly IBeerApi _beerService;
 
-        public OrderBeerDialog(IBeerApi beerService) : base(Id)
+        public OrderBeerDialog(string id, IBeerApi beerService) : base(id)
         {
             _beerService = beerService;
 
-            Dialogs.Add(Inputs.Text, new TextPrompt());
-            Dialogs.Add(Inputs.Choice, new ChoicePrompt(Culture.English));
-            Dialogs.Add(Inputs.Confirm, new ConfirmPrompt(Culture.English));
+            AddDialog(new TextPrompt(Inputs.Text));
+            AddDialog(new ChoicePrompt(Inputs.Choice));
+            AddDialog(new ConfirmPrompt(Inputs.Confirm));
 
             AddMainDialog();
             AddGetExactBeerNameDialog();
@@ -49,50 +40,51 @@ namespace BeerBot
 
         private void AddGetExactBeerNameDialog()
         {
-            Dialogs.Add(DialogIds.GetExactBeerName, new WaterfallStep[]
+            AddDialog(new WaterfallDialog(DialogIds.GetExactBeerName, new WaterfallStep[]
             {
-                async (dc, args, next) =>
+                (stepContext, cancellationToken) =>
                 {
-                    if (args != null && args.TryGetValue(InputArgs.BeerName, out object beerNameObject))
+                    var beerName = (string) stepContext.Options;
+                    if (beerName != null)
                     {
-                        await next(new Dictionary<string, object> {{"Text", beerNameObject}});
+                        return stepContext.NextAsync(beerName, cancellationToken);
                     }
-                    else
+
+                    return stepContext.PromptAsync(Inputs.Text, new PromptOptions
                     {
-                        await dc.Prompt(Inputs.Text, "What beer would you like to order?");
-                    }
+                        Prompt = MessageFactory.Text("What beer would you like to order?"),
+
+                    }, cancellationToken);
                 },
-                async (dc, args, next) =>
+                async (stepContext, cancellationToken) =>
                 {
-                    var beerName = (string) args["Text"];
-                    var beers = await _beerService.BeersGetBySearchTermAsync(beerName);
+                    var beerName = (string) stepContext.Result;
+                    var beers = await _beerService.BeersGetBySearchTermAsync(beerName, cancellationToken);
                     switch (beers.Count)
                     {
                         case 0:
-                            await dc.Context.SendActivity($"Oops! I haven't found any beer! {Emoji.Disappointed}");
-                            await dc.Replace(DialogIds.GetExactBeerName);
-                            break;
+                            await stepContext.Context.SendActivityAsync($"Oops! I haven't found any beer! {Emoji.Disappointed}", cancellationToken: cancellationToken);
+                            return await stepContext.ReplaceDialogAsync(DialogIds.GetExactBeerName, cancellationToken: cancellationToken);
                         case 1:
-                            await dc.End(new Dictionary<string, object> {{InputArgs.BeerName, beers[0].Name}});
-                            break;
+                            return await stepContext.EndDialogAsync(beers[0].Name, cancellationToken);
                         default:
                         {
                             var choices = ChoiceFactory.ToChoices(beers.Random(10).Select(beer => beer.Name).ToList());
-                            await dc.Prompt(Inputs.Choice, "I'm not sure which one", new ChoicePromptOptions
+                            return await stepContext.PromptAsync(Inputs.Choice, new PromptOptions
                             {
+                                Prompt = MessageFactory.Text("I'm not sure which one"),
+                                RetryPrompt = MessageFactory.Text("I probably drank too much. I'm not sure which one."),
                                 Choices = choices,
-                                RetryPromptString = "I probably drank too much. I'm not sure which one."
-                            });
-                            break;
+                            }, cancellationToken);
                         }
                     }
                 },
-                async (dc, args, next) =>
+                (stepContext, cancellationToken) =>
                 {
-                    var beerChoice = (FoundChoice) args["Value"];
-                    await dc.End(new Dictionary<string, object> {{InputArgs.BeerName, beerChoice.Value}});
+                    var beerChoice = (FoundChoice) stepContext.Result;
+                    return stepContext.EndDialogAsync(beerChoice.Value, cancellationToken);
                 }
-            });
+            }));
         }
 
         private static readonly List<string> PossibleChasers = Enum.GetValues(typeof(Chaser)).Cast<Chaser>().Select(chaser => chaser.ToString()).ToList();
@@ -102,83 +94,82 @@ namespace BeerBot
         {
             const string orderStateEntry = "beerOrder";
 
-            Dialogs.Add(Id, new WaterfallStep[]
+            AddDialog(new WaterfallDialog(DialogIds.Main, new WaterfallStep[]
             {
-                async (dc, args, next) =>
+                (stepContext, cancellationToken) =>
                 {
-                    dc.ActiveDialog.State[orderStateEntry] = new BeerOrder();
-                    if (args != null && args.TryGetValue(InputArgs.BeerName, out object beerName))
-                    {
-                        await dc.Begin(DialogIds.GetExactBeerName, new Dictionary<string, object> {{InputArgs.BeerName, beerName} });
-                    }
-                    else
-                    {
-                        await dc.Begin(DialogIds.GetExactBeerName);
-                    }
+                    stepContext.Values[orderStateEntry] = new BeerOrder();
+                    string beerName = (string) stepContext.Options;
+                    return stepContext.BeginDialogAsync(DialogIds.GetExactBeerName, beerName, cancellationToken);
                 },
-                async (dc, args, next) =>
+                (stepContext, cancellationToken) =>
                 {
-                    var beerOrder = (BeerOrder) dc.ActiveDialog.State[orderStateEntry];
-                    beerOrder.BeerName = (string) args[InputArgs.BeerName];
+                    var beerOrder = (BeerOrder) stepContext.Values[orderStateEntry];
+                    beerOrder.BeerName = (string) stepContext.Result;
 
                     if (beerOrder.Chaser != 0)
                     {
-                        await next();
-                        return;
+                        return stepContext.NextAsync(cancellationToken: cancellationToken);
                     }
 
-                    await dc.Prompt(Inputs.Choice, "Which chaser would you like next to your beer?", new ChoicePromptOptions
+                    return stepContext.PromptAsync(Inputs.Choice, new PromptOptions
                     {
+                        Prompt = MessageFactory.Text("Which chaser would you like next to your beer?"),
+                        RetryPrompt = MessageFactory.Text("I probably drank too much. Which chaser would you like next to your beer?"),
                         Choices = ChoiceFactory.ToChoices(PossibleChasers),
-                        RetryPromptString = "I probably drank too much. Which chaser would you like next to your beer?"
-                    });
+                    }, cancellationToken);
                 },
-                async (dc, args, next) =>
+                (stepContext, cancellationToken) =>
                 {
-                    var beerOrder = (BeerOrder) dc.ActiveDialog.State[orderStateEntry];
+                    var beerOrder = (BeerOrder) stepContext.Values[orderStateEntry];
                     if (beerOrder.Chaser == 0)
                     {
-                        var chaserChoice = (FoundChoice) args["Value"];
+                        var chaserChoice = (FoundChoice) stepContext.Result;
                         beerOrder.Chaser = Enum.Parse<Chaser>(chaserChoice.Value);
                     }
 
                     if (beerOrder.Side != 0)
                     {
-                        await next();
-                        return;
+                        return stepContext.NextAsync(cancellationToken: cancellationToken);
                     }
 
-                    await dc.Prompt(Inputs.Choice, "How about something to eat?", new ChoicePromptOptions
+                    return stepContext.PromptAsync(Inputs.Choice, new PromptOptions
                     {
+                        Prompt = MessageFactory.Text("How about something to eat?"),
+                        RetryPrompt = MessageFactory.Text("I probably drank too much. Which side dish would you like next to your beer?"),
                         Choices = ChoiceFactory.ToChoices(PossibleSideDishs),
-                        RetryPromptString = "I probably drank too much. Which side dish would you like next to your beer?"
-                    });
+                    }, cancellationToken);
                 },
-                async (dc, args, next) =>
+                (stepContext, cancellationToken) =>
                 {
-                    var beerOrder = (BeerOrder) dc.ActiveDialog.State[orderStateEntry];
+                    var beerOrder = (BeerOrder) stepContext.Values[orderStateEntry];
                     if (beerOrder.Side == 0)
                     {
-                        var sideDishChoice = (FoundChoice) args["Value"];
+                        var sideDishChoice = (FoundChoice) stepContext.Result;
                         beerOrder.Side = Enum.Parse<SideDish>(sideDishChoice.Value);
                     }
 
-                    await dc.Prompt(Inputs.Confirm,
-                        $"Just to make sure, do you want a {beerOrder.BeerName} beer with {beerOrder.Chaser} and some {beerOrder.Side} on the side?");
+                    return stepContext.PromptAsync(Inputs.Confirm, new PromptOptions
+                    {
+                        Prompt = MessageFactory.Text($"Just to make sure, do you want a {beerOrder.BeerName} beer with {beerOrder.Chaser} and some {beerOrder.Side} on the side?")
+                    }, cancellationToken);
                 },
-                async (dc, args, next) =>
+                async (stepContext, cancellationToken) =>
                 {
-                    var orderConfirmed = (bool) args["Confirmation"];
+                    var orderConfirmed = (bool) stepContext.Result;
                     if (orderConfirmed)
                     {
-                        await dc.Context.SendActivity($"Cheers {Emoji.Beers}");
+                        await stepContext.Context.SendActivityAsync($"Cheers {Emoji.Beers}", cancellationToken: cancellationToken);
                     }
                     else
                     {
-                        await dc.Context.SendActivity($"Maybe I'll get it right next time {Emoji.Confused}");
+                        await stepContext.Context.SendActivityAsync($"Maybe I'll get it right next time {Emoji.Confused}", cancellationToken: cancellationToken);
                     }
+
+                    return await stepContext.EndDialogAsync(cancellationToken: cancellationToken);
                 }
-            });
+            }));
+            InitialDialogId = DialogIds.Main;
         }
     }
 }
