@@ -1,10 +1,9 @@
 ﻿using System.Linq;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Threading.Tasks;
 using BeerBot.BeerApiClient;
-using Microsoft.Bot;
 using Microsoft.Bot.Builder;
-using Microsoft.Bot.Builder.Core.Extensions;
 using Microsoft.Bot.Builder.Dialogs;
 using Microsoft.Bot.Schema;
 
@@ -14,61 +13,62 @@ namespace BeerBot
     {
         private readonly BeerDialogs _beerDialogs;
 
-        public BeerBot(IBeerApi beerService)
+        public BeerBot(BeerBotAccessors accessors, IBeerApi beerService)
         {
-            _beerDialogs = new BeerDialogs(beerService);
+            _beerDialogs = new BeerDialogs(accessors.DialogState, beerService);
         }
 
-        public async Task OnTurn(ITurnContext context)
+        public async Task OnTurnAsync(ITurnContext turnContext, CancellationToken cancellationToken = default(CancellationToken))
         {
-            switch (context.Activity.Type)
+            switch (turnContext.Activity.Type)
             {
                 case ActivityTypes.Message:
-                    await HandleMessage(context);
-                    if (!context.Responded)
+                    await HandleMessageAsync(turnContext, cancellationToken);
+                    if (!turnContext.Responded)
                     {
-                        await context.SendActivity("I didn't quite understand what you are saying! You can type \"help\" for more information");
+                        await turnContext.SendActivityAsync(
+                            "I didn't quite understand what you are saying! You can type \"help\" for more information",
+                            cancellationToken: cancellationToken);
                     }
                     break;
                 case ActivityTypes.ConversationUpdate:
-                    await GreetAddedMembers(context);
+                    await GreetAddedMembersAsync(turnContext, cancellationToken);
                     break;
             }
 
         }
 
-        private async Task HandleMessage(ITurnContext context)
+        private async Task HandleMessageAsync(ITurnContext turnContext, CancellationToken cancellationToken)
         {
-            var conversationState = context.GetConversationState<BeerConversationState>();
-            DialogContext dc = _beerDialogs.CreateContext(context, conversationState);
-            await dc.Continue();
+            DialogContext dc = await _beerDialogs.CreateContextAsync(turnContext, cancellationToken);
+            var result = await dc.ContinueDialogAsync(cancellationToken);
 
-            if (!context.Responded)
+            if (result.Status == DialogTurnStatus.Empty || result.Status == DialogTurnStatus.Cancelled)
             {
-                switch (context.Activity.Text)
+                switch (turnContext.Activity.Text)
                 {
                     case var text when Regex.IsMatch(text, "^(hi|hello|hola).*", RegexOptions.IgnoreCase):
-                        await dc.Begin(BeerDialogs.Dialogs.Greet);
+                        await dc.BeginDialogAsync(BeerDialogs.Dialogs.Greet, cancellationToken: cancellationToken);
                         break;
                     case var text when Regex.IsMatch(text, ".*random.*", RegexOptions.IgnoreCase):
-                        await dc.Begin(BeerDialogs.Dialogs.RandomBeer);
+                        await dc.BeginDialogAsync(BeerDialogs.Dialogs.RandomBeer, cancellationToken: cancellationToken);
                         break;
                     case var text when Regex.IsMatch(text, ".*help.*", RegexOptions.IgnoreCase):
-                        await dc.Begin(BeerDialogs.Dialogs.MainMenu);
+                        await dc.BeginDialogAsync(BeerDialogs.Dialogs.MainMenu, cancellationToken: cancellationToken);
                         break;
                     case var text when Regex.IsMatch(text, "^(bye|exit|adios).*", RegexOptions.IgnoreCase):
-                        await dc.Begin(BeerDialogs.Dialogs.Exit);
+                        await dc.BeginDialogAsync(BeerDialogs.Dialogs.Exit, cancellationToken: cancellationToken);
                         break;
                 }
             }
         }
 
-        private Task GreetAddedMembers(ITurnContext context)
+        private Task GreetAddedMembersAsync(ITurnContext turnContext, CancellationToken cancellationToken)
         {
-            var newMember = context.Activity.MembersAdded.FirstOrDefault();
-            if (newMember != null && newMember.Id != context.Activity.Recipient.Id && !string.IsNullOrWhiteSpace(newMember.Name))
+            var newMember = turnContext.Activity.MembersAdded.FirstOrDefault();
+            if (newMember != null && newMember.Id != turnContext.Activity.Recipient.Id && !string.IsNullOrWhiteSpace(newMember.Name))
             {
-                return context.SendActivity($"Howdy {newMember.Name}!");
+                return turnContext.SendActivityAsync($"Howdy {newMember.Name}!", cancellationToken: cancellationToken);
             }
 
             return Task.CompletedTask;
