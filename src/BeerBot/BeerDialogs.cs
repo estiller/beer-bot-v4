@@ -1,11 +1,12 @@
 ﻿using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using BeerBot.BeerApiClient;
+using BeerBot.BeerApiClient.Models;
 using BeerBot.Emojis;
 using BeerBot.Utils;
+using Microsoft.Bot.Builder;
 using Microsoft.Bot.Builder.Dialogs;
-using Microsoft.Bot.Builder.Prompts.Choices;
-using Microsoft.Recognizers.Text;
+using Microsoft.Bot.Builder.Dialogs.Choices;
 
 namespace BeerBot
 {
@@ -16,7 +17,7 @@ namespace BeerBot
             public const string MainMenu = "mainMenu";
             public const string Greet = "greet";
             public const string RandomBeer = "randomBeer";
-            public const string RecommendBeer = RecommendBeerDialog.Id;
+            public const string RecommendBeer = "recommendBeer";
             public const string Exit = "exit";
         }
 
@@ -31,64 +32,65 @@ namespace BeerBot
             ("Recommend a beer", new List<string> { "recommend", "recommend beer" }, Dialogs.RecommendBeer),
             ("Exit", new List<string> { "bye", "adios" }, Dialogs.Exit));
 
-        public BeerDialogs(IBeerApi beerService)
+        public BeerDialogs(IStatePropertyAccessor<DialogState> dialogState, IBeerApi beerService) : base(dialogState)
         {
-            Add(Inputs.Choice, new ChoicePrompt(Culture.English));
-            Add(Inputs.Text, new TextPrompt());
+            Add(new ChoicePrompt(Inputs.Choice));
+            Add(new TextPrompt(Inputs.Text));
 
-            Add(Dialogs.MainMenu, new WaterfallStep[]
+            Add(new WaterfallDialog(Dialogs.MainMenu, new WaterfallStep[]
             {
-                async (dc, args, next) =>
+                (stepContext, cancellationToken) => stepContext.PromptAsync(Inputs.Choice, new PromptOptions
                 {
-                    await dc.Prompt(Inputs.Choice, "How can I help you?", new ChoicePromptOptions
-                    {
-                        Choices = DialogMenu.Choices,
-                        RetryPromptString = "Please choose an option"
-                    });
-                },
-                async (dc, args, next) =>
+                    Prompt = MessageFactory.Text("How can I help you?"),
+                    RetryPrompt = MessageFactory.Text("Please choose an option"),
+                    Choices = DialogMenu.Choices,
+                }),
+                async (stepContext, cancellationToken) =>
                 {
-                    var choice = (FoundChoice)args["Value"];
+                    var choice = (FoundChoice) stepContext.Result;
                     var dialogId = DialogMenu.GetDialogId(choice.Value);
 
-                    await dc.Begin(dialogId, dc.ActiveDialog.State);
+                    return await stepContext.BeginDialogAsync(dialogId, null, cancellationToken);
                 },
-            });
+            }));
 
-            Add(Dialogs.Greet, new WaterfallStep[]
+            Add(new WaterfallDialog(Dialogs.Greet, new WaterfallStep[]
             {
-                async (dc, args, next) =>
+                (stepContext, cancellationToken) => stepContext.PromptAsync(Inputs.Text,
+                    new PromptOptions {Prompt = MessageFactory.Text("Welcome to your friendly neighborhood bot-tender! How can I help?")}),
+                async (stepContext, cancellationToken) =>
                 {
-                    await dc.Prompt(Inputs.Text, "Welcome to your friendly neighborhood bot-tender! How can I help?");
-                },
-                async (dc, args, next) =>
-                {
-                    var text = (string)args["Text"];
+                    var text = (string) stepContext.Result;
                     if (Regex.IsMatch(text, "^(hi|hello|hola).*", RegexOptions.IgnoreCase))
                     {
-                        await dc.Context.SendActivity("I feel like we already know each other! How can I help?");
+                        await stepContext.Context.SendActivityAsync("I feel like we already know each other! How can I help?", cancellationToken: cancellationToken);
+                        return await stepContext.EndDialogAsync(cancellationToken: cancellationToken);
                     }
-                },
-            });
 
-            Add(Dialogs.RandomBeer, new WaterfallStep[]
+                    return await stepContext.CancelAllDialogsAsync(cancellationToken);
+                },
+            }));
+
+            Add(new WaterfallDialog(Dialogs.RandomBeer, new WaterfallStep[]
             {
-                async (dc, args, next) =>
+                async (stepContext, cancellationToken) =>
                 {
-                    var beer = await beerService.BeersRandomGetAsync();
-                    await dc.Context.SendActivity($"You should definitely get a {beer.Name}");
+                    Beer beer = await beerService.BeersRandomGetAsync(cancellationToken);
+                    await stepContext.Context.SendActivityAsync($"You should definitely get a {beer.Name}", cancellationToken: cancellationToken);
+                    return await stepContext.EndDialogAsync(beer, cancellationToken);
                 },
-            });
+            }));
 
-            Add(Dialogs.RecommendBeer, new RecommendBeerDialog(beerService));
+            Add(new RecommendBeerDialog(Dialogs.RecommendBeer, beerService));
 
-            Add(Dialogs.Exit, new WaterfallStep[]
+            Add(new WaterfallDialog(Dialogs.Exit, new WaterfallStep[]
             {
-                async (dc, args, next) =>
+                async (stepContext, cancellationToken) =>
                 {
-                    await dc.Context.SendActivity($"So soon? Oh well. See you later {Emoji.Wave}");
+                    await stepContext.Context.SendActivityAsync($"So soon? Oh well. See you later {Emoji.Wave}", cancellationToken: cancellationToken);
+                    return await stepContext.EndDialogAsync(cancellationToken: cancellationToken);
                 },
-            });
+            }));
         }
     }
 }
