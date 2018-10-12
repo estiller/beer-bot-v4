@@ -45,12 +45,12 @@ namespace BeerBot
                     RetryPrompt = MessageFactory.Text("Please choose an option"),
                     Choices = DialogMenu.Choices,
                 }),
-                async (stepContext, cancellationToken) =>
+                (stepContext, cancellationToken) =>
                 {
                     var choice = (FoundChoice) stepContext.Result;
                     var dialogId = DialogMenu.GetDialogId(choice.Value);
 
-                    return await stepContext.BeginDialogAsync(dialogId, null, cancellationToken);
+                    return stepContext.BeginDialogAsync(dialogId, null, cancellationToken);
                 },
             }));
 
