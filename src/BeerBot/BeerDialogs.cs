@@ -43,12 +43,12 @@ namespace BeerBot
                     RetryPrompt = MessageFactory.Text("Please choose an option"),
                     Choices = DialogMenu.Choices,
                 }),
-                async (stepContext, cancellationToken) =>
+                (stepContext, cancellationToken) =>
                 {
                     var choice = (FoundChoice) stepContext.Result;
                     var dialogId = DialogMenu.GetDialogId(choice.Value);
 
-                    return await stepContext.BeginDialogAsync(dialogId, null, cancellationToken);
+                    return stepContext.BeginDialogAsync(dialogId, null, cancellationToken);
                 },
             }));
 
@@ -73,7 +73,7 @@ namespace BeerBot
             {
                 async (stepContext, cancellationToken) =>
                 {
-                    Beer beer = await beerService.BeersRandomGetAsync();
+                    Beer beer = await beerService.BeersRandomGetAsync(cancellationToken);
                     await stepContext.Context.SendActivityAsync($"You should definitely get a {beer.Name}", cancellationToken: cancellationToken);
                     return await stepContext.EndDialogAsync(beer, cancellationToken);
                 },
