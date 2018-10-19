@@ -19,12 +19,8 @@ namespace BeerBot
 {
     public class Startup
     {
-        private readonly IHostingEnvironment _hostingEnvironment;
-
         public Startup(IHostingEnvironment env)
         {
-            _hostingEnvironment = env;
-
             var builder = new ConfigurationBuilder()
                 .SetBasePath(env.ContentRootPath)
                 .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
@@ -37,25 +33,22 @@ namespace BeerBot
             }
 
             Configuration = builder.Build();
+
+            var secretKey = Configuration.GetSection("botFileSecret")?.Value;
+            var botFilePath = Configuration.GetSection("botFilePath")?.Value;
+            BotConfiguration = BotConfiguration.Load(botFilePath ?? @".\BeerBot.bot", secretKey) ??
+                               throw new InvalidOperationException($"The .bot config file could not be loaded. ({botFilePath})");
         }
 
         public IConfiguration Configuration { get; }
+
+        public BotConfiguration BotConfiguration { get; }
 
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddBot<BeerBot>(options =>
             {
-                var secretKey = Configuration.GetSection("botFileSecret")?.Value;
-                var botFilePath = Configuration.GetSection("botFilePath")?.Value;
-
-                var botConfig = BotConfiguration.Load(botFilePath ?? @".\BeerBot.bot", secretKey);
-                services.AddSingleton(sp => botConfig ?? throw new InvalidOperationException($"The .bot config file could not be loaded. ({botFilePath})"));
-
-                var service = botConfig.Services.FirstOrDefault(s => s.Type == "endpoint" && s.Name == _hostingEnvironment.EnvironmentName);
-                if (!(service is EndpointService endpointService))
-                {
-                    throw new InvalidOperationException($"The .bot file does not contain an endpoint with name '{_hostingEnvironment.EnvironmentName}'.");
-                }
+                var endpointService = (EndpointService) BotConfiguration.Services.First(s => s.Type == "endpoint");
 
                 options.CredentialProvider = new SimpleCredentialProvider(endpointService.AppId, endpointService.AppPassword);
 
@@ -88,8 +81,16 @@ namespace BeerBot
                 };
             });
 
-            services.AddSingleton<IBeerApi, BeerApi>(sp => new BeerApi(new Uri(Configuration.GetValue<string>("BeerApiBaseUrl"))));
-            services.AddSingleton<IImageSearchService, ImageSearchService>(sp => new ImageSearchService(Configuration.GetValue<string>("CognitiveServiceBingSearchApiKey")));
+            services.AddSingleton<IBeerApi, BeerApi>(sp =>
+            {
+                var beerApiConfig = (GenericService) BotConfiguration.Services.First(service => service.Name == "BeerApi");
+                return new BeerApi(new Uri(beerApiConfig.Url));
+            });
+            services.AddSingleton<IImageSearchService, ImageSearchService>(sp =>
+            {
+                var imageSearchConfig = (GenericService)BotConfiguration.Services.First(service => service.Name == "ImageSearch");
+                return new ImageSearchService(imageSearchConfig.Url, imageSearchConfig.Configuration["key"]);
+            });
         }
 
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
