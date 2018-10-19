@@ -4,7 +4,7 @@
     "services": [
         {
             "type": "endpoint",
-            "name": "BeerBot",
+            "name": "Development",
             "endpoint": "http://localhost:3978/api/messages",
             "appId": "",
             "appPassword": "",
@@ -12,7 +12,7 @@
         },
         {
             "type": "generic",
-            "name": "BeerApi",
+            "name": "BeerApi-Development",
             "url": "http://localhost:59855",
             "configuration": {},
             "id": "192"
