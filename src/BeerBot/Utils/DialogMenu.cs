@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using Microsoft.Bot.Builder.Prompts.Choices;
+using Microsoft.Bot.Builder.Dialogs.Choices;
 
 namespace BeerBot.Utils
 {

@@ -6,9 +6,11 @@
 // </auto-generated>
 using Newtonsoft.Json;
 using System.Collections.Generic;
+using Microsoft.Bot.Builder;
+using Microsoft.Bot.Builder.AI.Luis;
 namespace BeerBot
 {
-    public class BeerBotLuisModel: Microsoft.Bot.Builder.Core.Extensions.IRecognizerConvert
+    public class BeerBotLuisModel: IRecognizerConvert
     {
         public string Text;
         public string AlteredText;
@@ -21,7 +23,7 @@ namespace BeerBot
             RandomBeer, 
             RecommendBeer
         };
-        public Dictionary<Intent, Microsoft.Bot.Builder.Ai.LUIS.IntentData> Intents;
+        public Dictionary<Intent, IntentScore> Intents;
 
         public class _Entities
         {
@@ -35,9 +37,9 @@ namespace BeerBot
             // Composites
             public class _Instancebeerorder
             {
-                public Microsoft.Bot.Builder.Ai.LUIS.InstanceData[] beername;
-                public Microsoft.Bot.Builder.Ai.LUIS.InstanceData[] chaser;
-                public Microsoft.Bot.Builder.Ai.LUIS.InstanceData[] sidedish;
+                public InstanceData[] beername;
+                public InstanceData[] chaser;
+                public InstanceData[] sidedish;
             }
             public class beerorderClass
             {
@@ -52,10 +54,10 @@ namespace BeerBot
             // Instance
             public class _Instance
             {
-                public Microsoft.Bot.Builder.Ai.LUIS.InstanceData[] beername;
-                public Microsoft.Bot.Builder.Ai.LUIS.InstanceData[] chaser;
-                public Microsoft.Bot.Builder.Ai.LUIS.InstanceData[] sidedish;
-                public Microsoft.Bot.Builder.Ai.LUIS.InstanceData[] beerorder;
+                public InstanceData[] beername;
+                public InstanceData[] chaser;
+                public InstanceData[] sidedish;
+                public InstanceData[] beerorder;
             }
             [JsonProperty("$instance")]
             public _Instance _instance;
@@ -84,7 +86,7 @@ namespace BeerBot
                 if (entry.Value.Score > max)
                 {
                     maxIntent = entry.Key;
-                    max = entry.Value.Score;
+                    max = entry.Value.Score.Value;
                 }
             }
             return (maxIntent, max);

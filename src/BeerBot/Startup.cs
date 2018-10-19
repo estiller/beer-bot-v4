@@ -1,16 +1,20 @@
 ﻿using System;
+using System.Linq;
 using BeerBot.BeerApiClient;
 using BeerBot.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.Bot.Builder.Ai.LUIS;
-using Microsoft.Bot.Builder.BotFramework;
-using Microsoft.Bot.Builder.Core.Extensions;
+using Microsoft.Bot.Builder;
+using Microsoft.Bot.Builder.AI.Luis;
+using Microsoft.Bot.Builder.Dialogs;
+using Microsoft.Bot.Builder.Integration;
 using Microsoft.Bot.Builder.Integration.AspNet.Core;
 using Microsoft.Bot.Builder.TraceExtensions;
-using Microsoft.Cognitive.LUIS;
+using Microsoft.Bot.Configuration;
+using Microsoft.Bot.Connector.Authentication;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 
 namespace BeerBot
 {
@@ -30,57 +34,77 @@ namespace BeerBot
             }
 
             Configuration = builder.Build();
+
+            var secretKey = Configuration.GetSection("botFileSecret")?.Value;
+            var botFilePath = Configuration.GetSection("botFilePath")?.Value;
+            BotConfiguration = BotConfiguration.Load(botFilePath ?? @".\BeerBot.bot", secretKey) ??
+                               throw new InvalidOperationException($"The .bot config file could not be loaded. ({botFilePath})");
         }
 
         public IConfiguration Configuration { get; }
+
+        public BotConfiguration BotConfiguration { get; }
 
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddBot<BeerBot>(options =>
             {
-                options.CredentialProvider = new ConfigurationCredentialProvider(Configuration);
+                var endpointService = (EndpointService) BotConfiguration.Services.First(s => s.Type == "endpoint");
 
-                options.Middleware.Add(new CatchExceptionMiddleware<Exception>(async (context, exception) =>
+                options.CredentialProvider = new SimpleCredentialProvider(endpointService.AppId, endpointService.AppPassword);
+
+                options.OnTurnError = async (context, exception) =>
                 {
-                    await context.TraceActivity("BeerBot Exception", exception);
-                    await context.SendActivity("Sorry, it looks like something went wrong!");
-                }));
+                    await context.TraceActivityAsync("BeerBot Exception", exception);
+                    await context.SendActivityAsync("Sorry, it looks like something went wrong!");
+                };
 
                 IStorage dataStore = new MemoryStorage();
-                //IStorage dataStore = new AzureBlobStorage(Configuration.GetValue<string>("AzureTableConnectionString"), "beerstate");
-                options.Middleware.Add(new ConversationState<BeerConversationState>(dataStore));
-                options.Middleware.Add(new UserState<UserInfo>(dataStore));
-
-                //options.Middleware.Add(
-                //    new LuisRecognizerMiddleware(
-                //        new LuisModel(
-                //            Configuration.GetValue<string>("CognitiveServiceLuisAppId"),
-                //            Configuration.GetValue<string>("CognitiveServiceLuisApiKey"),
-                //            new Uri("https://westeurope.api.cognitive.microsoft.com/luis/v2.0/apps/")),
-                //        new LuisRecognizerOptions { Verbose = true },
-                //        new LuisRequest
-                //        {
-                //            SpellCheck = true,
-                //            BingSpellCheckSubscriptionKey = Configuration.GetValue<string>("CognitiveServiceBingSpellCheckApiKey")
-                //        }));
+                //IStorage dataStore = new AzureBlobStorage(CONNECTION_STRING, "beerstate");
+                var conversationState = new ConversationState(dataStore);
+                options.State.Add(conversationState);
+                var userState = new UserState(dataStore);
+                options.State.Add(userState);
+                options.Middleware.Add(new AutoSaveStateMiddleware(conversationState, userState));
 
                 options.Middleware.Add(new ShowTypingMiddleware());
             });
 
-            services.AddSingleton(sp => new LuisRecognizer(
-                new LuisModel(
-                    Configuration.GetValue<string>("CognitiveServiceLuisAppId"),
-                    Configuration.GetValue<string>("CognitiveServiceLuisApiKey"),
-                    new Uri("https://westeurope.api.cognitive.microsoft.com/luis/v2.0/apps/")),
-                new LuisRecognizerOptions {Verbose = true},
-                new LuisRequest
+            services.AddSingleton(sp =>
+            {
+                var luisService = (LuisService) BotConfiguration.Services.First(service => service.Name == "BeerModel");
+                var spellCheckService = (GenericService) BotConfiguration.Services.First(service => service.Name == "SpellCheck");
+                var app = new LuisApplication(luisService.AppId, luisService.SubscriptionKey, luisService.GetEndpoint());
+                var predictionOptions = new LuisPredictionOptions
                 {
                     SpellCheck = true,
-                    BingSpellCheckSubscriptionKey = Configuration.GetValue<string>("CognitiveServiceBingSpellCheckApiKey")
-                }));
+                    BingSpellCheckSubscriptionKey = spellCheckService.Configuration["key"]
+                };
+                return new LuisRecognizer(app, predictionOptions);
+            });
 
-            services.AddSingleton<IBeerApi, BeerApi>(sp => new BeerApi(new Uri(Configuration.GetValue<string>("BeerApiBaseUrl"))));
-            services.AddSingleton<IImageSearchService, ImageSearchService>(sp => new ImageSearchService(Configuration.GetValue<string>("CognitiveServiceBingSearchApiKey")));
+            services.AddSingleton(sp =>
+            {
+                var options = sp.GetRequiredService<IOptions<BotFrameworkOptions>>().Value;
+                var conversationState = options.State.OfType<ConversationState>().First();
+                var userState = options.State.OfType<UserState>().First();
+                return new BeerBotAccessors(conversationState, userState)
+                {
+                    DialogState = conversationState.CreateProperty<DialogState>(BeerBotAccessors.DialogStateName),
+                    UserInfo = conversationState.CreateProperty<UserInfo>(BeerBotAccessors.UserInfoName)
+                };
+            });
+
+            services.AddSingleton<IBeerApi, BeerApi>(sp =>
+            {
+                var beerApiConfig = (GenericService) BotConfiguration.Services.First(service => service.Name == "BeerApi");
+                return new BeerApi(new Uri(beerApiConfig.Url));
+            });
+            services.AddSingleton<IImageSearchService, ImageSearchService>(sp =>
+            {
+                var imageSearchConfig = (GenericService)BotConfiguration.Services.First(service => service.Name == "ImageSearch");
+                return new ImageSearchService(imageSearchConfig.Url, imageSearchConfig.Configuration["key"]);
+            });
         }
 
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
