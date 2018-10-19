@@ -1,3 +1,5 @@
+# Production settings
+src/BeerBot/BeerBot.Prod.bot
 
 # Created by https://www.gitignore.io/api/aspnetcore,visualstudiocode
 
