@@ -1,15 +1,12 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using BeerBot.BeerApiClient;
 using BeerBot.Emojis;
 using BeerBot.Services;
-using Microsoft.Bot;
 using Microsoft.Bot.Builder;
-using Microsoft.Bot.Builder.Ai.LUIS;
-using Microsoft.Bot.Builder.Core.Extensions;
+using Microsoft.Bot.Builder.AI.Luis;
 using Microsoft.Bot.Builder.Dialogs;
 using Microsoft.Bot.Schema;
 
@@ -17,56 +14,56 @@ namespace BeerBot
 {
     public class BeerBot : IBot
     {
-        private readonly LuisRecognizer _luisRecognizer;
         private readonly BeerDialogs _beerDialogs;
+        private readonly LuisRecognizer _luisRecognizer;
 
-        public BeerBot(LuisRecognizer luisRecognizer, IBeerApi beerService, IImageSearchService imageSearch)
+        public BeerBot(BeerBotAccessors accessors, LuisRecognizer luisRecognizer, IBeerApi beerService, IImageSearchService imageSearch)
         {
+            _beerDialogs = new BeerDialogs(accessors.DialogState, accessors.UserInfo, beerService, imageSearch);
             _luisRecognizer = luisRecognizer;
-            _beerDialogs = new BeerDialogs(beerService, imageSearch);
         }
 
-        public async Task OnTurn(ITurnContext context)
+        public async Task OnTurnAsync(ITurnContext turnContext, CancellationToken cancellationToken = default(CancellationToken))
         {
-            switch (context.Activity.Type)
+            switch (turnContext.Activity.Type)
             {
                 case ActivityTypes.Message:
-                    await HandleMessage(context);
-                    if (!context.Responded)
+                    await HandleMessageAsync(turnContext, cancellationToken);
+                    if (!turnContext.Responded)
                     {
-                        await context.SendActivity(
+                        await turnContext.SendActivityAsync(
                             "I didn't quite understand what you are saying! You can type \"help\" for more information",
-                            "I didn't quite understand what you are saying! You can type \"help\" for more information");
+                            "I didn't quite understand what you are saying! You can type \"help\" for more information",
+                            cancellationToken: cancellationToken);
                     }
                     break;
                 case ActivityTypes.ConversationUpdate:
-                    await GreetAddedMembers(context);
+                    await GreetAddedMembersAsync(turnContext, cancellationToken);
                     break;
             }
 
         }
 
-        private async Task HandleMessage(ITurnContext context)
+        private async Task HandleMessageAsync(ITurnContext turnContext, CancellationToken cancellationToken)
         {
-            var conversationState = context.GetConversationState<BeerConversationState>();
-            DialogContext dc = _beerDialogs.CreateContext(context, conversationState);
-            await dc.Continue();
+            DialogContext dc = await _beerDialogs.CreateContextAsync(turnContext, cancellationToken);
+            var result = await dc.ContinueDialogAsync(cancellationToken);
 
-            if (!context.Responded)
+            if (result.Status == DialogTurnStatus.Empty || result.Status == DialogTurnStatus.Cancelled)
             {
-                var model = await _luisRecognizer.Recognize<BeerBotLuisModel>(context.Activity.Text, CancellationToken.None);
+                var model = await _luisRecognizer.RecognizeAsync<BeerBotLuisModel>(turnContext, cancellationToken);
                 var topIntent = model.TopIntent().intent;
 
                 switch (topIntent)
                 {
                     case BeerBotLuisModel.Intent.Greet:
-                        await dc.Begin(BeerDialogs.Dialogs.Greet);
+                        await dc.BeginDialogAsync(BeerDialogs.Dialogs.Greet, cancellationToken: cancellationToken);
                         break;
                     case BeerBotLuisModel.Intent.RandomBeer:
-                        await dc.Begin(BeerDialogs.Dialogs.RandomBeer);
+                        await dc.BeginDialogAsync(BeerDialogs.Dialogs.RandomBeer, cancellationToken: cancellationToken);
                         break;
                     case BeerBotLuisModel.Intent.RecommendBeer:
-                        await dc.Begin(BeerDialogs.Dialogs.RecommendBeer);
+                        await dc.BeginDialogAsync(BeerDialogs.Dialogs.RecommendBeer, cancellationToken: cancellationToken);
                         break;
                     case BeerBotLuisModel.Intent.OrderBeer:
                     {
@@ -77,8 +74,7 @@ namespace BeerBot
                             Chaser = SafeParse<Chaser>(beerOrderModel?.chaser?.FirstOrDefault()?.FirstOrDefault()),
                             Side = SafeParse<SideDish>(beerOrderModel?.sidedish?.FirstOrDefault()?.FirstOrDefault())
                         };
-                        await dc.Begin(BeerDialogs.Dialogs.OrderBeer,
-                            new Dictionary<string, object> {{OrderBeerDialog.InputArgs.BeerOrder, beerOrder}});
+                        await dc.BeginDialogAsync(BeerDialogs.Dialogs.OrderBeer, beerOrder, cancellationToken);
                         break;
 
                         T SafeParse<T>(string value) where T : struct 
@@ -88,28 +84,32 @@ namespace BeerBot
                         }
                     }
                     case BeerBotLuisModel.Intent.GetHelp:
-                        await dc.Begin(BeerDialogs.Dialogs.MainMenu);
+                        await dc.BeginDialogAsync(BeerDialogs.Dialogs.MainMenu, cancellationToken: cancellationToken);
                         break;
                     case BeerBotLuisModel.Intent.Bye:
-                        await dc.Begin(BeerDialogs.Dialogs.Exit);
+                        await dc.BeginDialogAsync(BeerDialogs.Dialogs.Exit, cancellationToken: cancellationToken);
                         break;
                     case BeerBotLuisModel.Intent.None:
                         break;
                     default:
-                        await context.SendActivity(
+                        await turnContext.SendActivityAsync(
                             $"Something must be wrong with my language circuits... {Emoji.Coffee}",
-                            "Something must be wrong with my language circuits...");
+                            "Something must be wrong with my language circuits...",
+                            cancellationToken: cancellationToken);
                         break;
                 }
             }
         }
 
-        private Task GreetAddedMembers(ITurnContext context)
+        private Task GreetAddedMembersAsync(ITurnContext turnContext, CancellationToken cancellationToken)
         {
-            var newMember = context.Activity.MembersAdded.FirstOrDefault();
-            if (newMember != null && newMember.Id != context.Activity.Recipient.Id && !string.IsNullOrWhiteSpace(newMember.Name))
+            var newMember = turnContext.Activity.MembersAdded.FirstOrDefault();
+            if (newMember != null && newMember.Id != turnContext.Activity.Recipient.Id && !string.IsNullOrWhiteSpace(newMember.Name))
             {
-                return context.SendActivity($"Howdy {newMember.Name}!", $"Howdy {newMember.Name}!");
+                return turnContext.SendActivityAsync(
+                    $"Howdy {newMember.Name}!",
+                    $"Howdy {newMember.Name}!",
+                    cancellationToken: cancellationToken);
             }
 
             return Task.CompletedTask;

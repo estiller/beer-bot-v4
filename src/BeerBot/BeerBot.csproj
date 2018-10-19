@@ -2,17 +2,27 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp2.1</TargetFramework>
-    <UserSecretsId>6f56db3b-b4f3-4b25-83b2-054ca7a5f2a4</UserSecretsId>
+    <UserSecretsId>c3dd7d14-064e-4e0b-86d3-113e5e562bfc</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.All" Version="2.1.3" />
-    <PackageReference Include="Microsoft.Bot.Builder.Ai.LUIS" Version="4.0.1-preview" />
-    <PackageReference Include="Microsoft.Bot.Builder.Azure" Version="4.0.1-preview" />
-    <PackageReference Include="Microsoft.Bot.Builder.Core" Version="4.0.1-preview" />
-    <PackageReference Include="Microsoft.Bot.Builder.Core.Extensions" Version="4.0.1-preview" />
-    <PackageReference Include="Microsoft.Bot.Builder.Dialogs" Version="4.0.1-preview" />
-    <PackageReference Include="Microsoft.Bot.Builder.Integration.AspNet.Core" Version="4.0.1-preview" />
+    <None Remove="BeerBot.bot" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="BeerBot.bot">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.All" Version="2.1.5" />
+    <PackageReference Include="Microsoft.Bot.Builder" Version="4.0.7" />
+    <PackageReference Include="Microsoft.Bot.Builder.AI.Luis" Version="4.0.7" />
+    <PackageReference Include="Microsoft.Bot.Builder.Azure" Version="4.0.7" />
+    <PackageReference Include="Microsoft.Bot.Builder.Dialogs" Version="4.0.7" />
+    <PackageReference Include="Microsoft.Bot.Builder.Integration.AspNet.Core" Version="4.0.7" />
+    <PackageReference Include="Microsoft.Bot.Configuration" Version="4.0.7" />
   </ItemGroup>
 
 </Project>
