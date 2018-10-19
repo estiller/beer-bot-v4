@@ -1,23 +1,31 @@
 ﻿using System;
+using System.Linq;
 using BeerBot.BeerApiClient;
 using BeerBot.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.Bot.Builder.Ai.LUIS;
-using Microsoft.Bot.Builder.BotFramework;
-using Microsoft.Bot.Builder.Core.Extensions;
+using Microsoft.Bot.Builder;
+using Microsoft.Bot.Builder.AI.Luis;
+using Microsoft.Bot.Builder.Dialogs;
+using Microsoft.Bot.Builder.Integration;
 using Microsoft.Bot.Builder.Integration.AspNet.Core;
 using Microsoft.Bot.Builder.TraceExtensions;
-using Microsoft.Cognitive.LUIS;
+using Microsoft.Bot.Configuration;
+using Microsoft.Bot.Connector.Authentication;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 
 namespace BeerBot
 {
     public class Startup
     {
+        private readonly IHostingEnvironment _hostingEnvironment;
+
         public Startup(IHostingEnvironment env)
         {
+            _hostingEnvironment = env;
+
             var builder = new ConfigurationBuilder()
                 .SetBasePath(env.ContentRootPath)
                 .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
@@ -38,34 +46,61 @@ namespace BeerBot
         {
             services.AddBot<BeerBot>(options =>
             {
-                options.CredentialProvider = new ConfigurationCredentialProvider(Configuration);
+                var secretKey = Configuration.GetSection("botFileSecret")?.Value;
+                var botFilePath = Configuration.GetSection("botFilePath")?.Value;
 
-                options.Middleware.Add(new CatchExceptionMiddleware<Exception>(async (context, exception) =>
+                var botConfig = BotConfiguration.Load(botFilePath ?? @".\BeerBot.bot", secretKey);
+                services.AddSingleton(sp => botConfig ?? throw new InvalidOperationException($"The .bot config file could not be loaded. ({botFilePath})"));
+
+                var service = botConfig.Services.FirstOrDefault(s => s.Type == "endpoint" && s.Name == _hostingEnvironment.EnvironmentName);
+                if (!(service is EndpointService endpointService))
                 {
-                    await context.TraceActivity("BeerBot Exception", exception);
-                    await context.SendActivity("Sorry, it looks like something went wrong!");
-                }));
+                    throw new InvalidOperationException($"The .bot file does not contain an endpoint with name '{_hostingEnvironment.EnvironmentName}'.");
+                }
+
+                options.CredentialProvider = new SimpleCredentialProvider(endpointService.AppId, endpointService.AppPassword);
+
+                options.OnTurnError = async (context, exception) =>
+                {
+                    await context.TraceActivityAsync("BeerBot Exception", exception);
+                    await context.SendActivityAsync("Sorry, it looks like something went wrong!");
+                };
 
                 IStorage dataStore = new MemoryStorage();
-                //IStorage dataStore = new AzureBlobStorage(Configuration.GetValue<string>("AzureTableConnectionString"), "beerstate");
-                options.Middleware.Add(new ConversationState<BeerConversationState>(dataStore));
-                options.Middleware.Add(new UserState<UserInfo>(dataStore));
-
-                var modelId = Configuration.GetValue<string>("CognitiveServiceLuisAppId");
-                options.Middleware.Add(
-                    new LuisRecognizerMiddleware(
-                        new LuisModel(
-                            modelId,
-                            Configuration.GetValue<string>("CognitiveServiceLuisApiKey"),
-                            new Uri("https://westeurope.api.cognitive.microsoft.com/luis/v2.0/apps/")),
-                        new LuisRecognizerOptions { Verbose = true },
-                        new LuisRequest
-                        {
-                            SpellCheck = true,
-                            BingSpellCheckSubscriptionKey = Configuration.GetValue<string>("CognitiveServiceBingSpellCheckApiKey")
-                        }));
+                //IStorage dataStore = new AzureBlobStorage(CONNECTION_STRING, "beerstate");
+                var conversationState = new ConversationState(dataStore);
+                options.State.Add(conversationState);
+                var userState = new UserState(dataStore);
+                options.State.Add(userState);
+                options.Middleware.Add(new AutoSaveStateMiddleware(conversationState, userState));
 
                 options.Middleware.Add(new ShowTypingMiddleware());
+            });
+
+            services.AddSingleton(sp =>
+            {
+                var app = new LuisApplication(
+                    Configuration.GetValue<string>("CognitiveServiceLuisAppId"),
+                    Configuration.GetValue<string>("CognitiveServiceLuisApiKey"),
+                    "https://westeurope.api.cognitive.microsoft.com");
+                var predictionOptions = new LuisPredictionOptions
+                {
+                    SpellCheck = true,
+                    BingSpellCheckSubscriptionKey = Configuration.GetValue<string>("CognitiveServiceBingSpellCheckApiKey")
+                };
+                return new LuisRecognizer(app, predictionOptions);
+            });
+
+            services.AddSingleton(sp =>
+            {
+                var options = sp.GetRequiredService<IOptions<BotFrameworkOptions>>().Value;
+                var conversationState = options.State.OfType<ConversationState>().First();
+                var userState = options.State.OfType<UserState>().First();
+                return new BeerBotAccessors(conversationState, userState)
+                {
+                    DialogState = conversationState.CreateProperty<DialogState>(BeerBotAccessors.DialogStateName),
+                    UserInfo = conversationState.CreateProperty<UserInfo>(BeerBotAccessors.UserInfoName)
+                };
             });
 
             services.AddSingleton<IBeerApi, BeerApi>(sp => new BeerApi(new Uri(Configuration.GetValue<string>("BeerApiBaseUrl"))));
