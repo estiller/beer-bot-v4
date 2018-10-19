@@ -20,8 +20,12 @@ namespace BeerBot
 {
     public class Startup
     {
+        private readonly IHostingEnvironment _hostingEnvironment;
+
         public Startup(IHostingEnvironment env)
         {
+            _hostingEnvironment = env;
+
             var builder = new ConfigurationBuilder()
                 .SetBasePath(env.ContentRootPath)
                 .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
@@ -49,7 +53,7 @@ namespace BeerBot
         {
             services.AddBot<BeerBot>(options =>
             {
-                var endpointService = (EndpointService) BotConfiguration.Services.First(s => s.Type == "endpoint");
+                var endpointService = (EndpointService) BotConfiguration.Services.First(s => s.Type == "endpoint" && s.Name == _hostingEnvironment.EnvironmentName);
 
                 options.CredentialProvider = new SimpleCredentialProvider(endpointService.AppId, endpointService.AppPassword);
 
@@ -97,7 +101,7 @@ namespace BeerBot
 
             services.AddSingleton<IBeerApi, BeerApi>(sp =>
             {
-                var beerApiConfig = (GenericService) BotConfiguration.Services.First(service => service.Name == "BeerApi");
+                var beerApiConfig = (GenericService) BotConfiguration.Services.First(service => service.Name == $"BeerApi-{_hostingEnvironment.EnvironmentName}");
                 return new BeerApi(new Uri(beerApiConfig.Url));
             });
             services.AddSingleton<IImageSearchService, ImageSearchService>(sp =>
