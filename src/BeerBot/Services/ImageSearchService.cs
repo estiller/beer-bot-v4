@@ -7,12 +7,12 @@ namespace BeerBot.Services
 {
     internal class ImageSearchService : IImageSearchService
     {
-        private const string ApiRootUrl = "https://api.cognitive.microsoft.com/bing/v7.0/images/search";
-
+        private readonly string _rootUrl;
         private readonly HttpClient _httpClient;
 
-        public ImageSearchService(string apiKey)
+        public ImageSearchService(string rootUrl, string apiKey)
         {
+            _rootUrl = rootUrl;
             _httpClient = CreateHttpClient(apiKey);
         }
 
@@ -26,11 +26,11 @@ namespace BeerBot.Services
             return new Uri(url);
         }
 
-        private static HttpClient CreateHttpClient(string apiKey)
+        private HttpClient CreateHttpClient(string apiKey)
         {
             var client = new HttpClient
             {
-                BaseAddress = new Uri(ApiRootUrl)
+                BaseAddress = new Uri(_rootUrl)
             };
             client.DefaultRequestHeaders.Add("Ocp-Apim-Subscription-Key", apiKey);
             return client;
