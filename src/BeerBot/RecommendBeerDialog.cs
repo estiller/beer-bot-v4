@@ -55,10 +55,12 @@ namespace BeerBot
                 {
                     Prompt = MessageFactory.Text(
                         "How would you like me to recommend your beer?", 
-                        "How would you like me to recommend your beer? By category, by origin, or by name?"),
+                        "How would you like me to recommend your beer? By category, by origin, or by name?",
+                        InputHints.ExpectingInput),
                     RetryPrompt = MessageFactory.Text(
                         "Not sure I got it. Could you try again?", 
-                        "Not sure I got it. By category, by origin, or by name?"),
+                        "Not sure I got it. By category, by origin, or by name?",
+                        InputHints.ExpectingInput),
                     Choices = RecommendationMenu.Choices,
                 }),
                 (stepContext, cancellationToken) =>
@@ -89,7 +91,8 @@ namespace BeerBot
                     {
                         Prompt = MessageFactory.Text(
                             "Do you remember the name? Give me what you remember", 
-                            "Do you remember the name? Give me what you remember"),
+                            "Do you remember the name? Give me what you remember",
+                            InputHints.ExpectingInput),
                     }, cancellationToken),
                 (stepContext, cancellationToken) =>
                 {
@@ -112,10 +115,12 @@ namespace BeerBot
                     {
                         Prompt = MessageFactory.Text(
                             "Where would you like your beer from?", 
-                            "Where would you like your beer from?"),
+                            "Where would you like your beer from?",
+                            InputHints.ExpectingInput),
                         RetryPrompt = MessageFactory.Text(
                             "I probably drank too much. Where would you like your beer from?", 
-                            "I probably drank too much. Where would you like your beer from?"),
+                            "I probably drank too much. Where would you like your beer from?",
+                            InputHints.ExpectingInput),
                         Choices = ChoiceFactory.ToChoices(countries.Random(5)),
                     }, cancellationToken);
                 },
@@ -137,8 +142,8 @@ namespace BeerBot
 
                     return await stepContext.PromptAsync(Inputs.Choice, new PromptOptions
                     {
-                        Prompt = MessageFactory.Text("Which brewery?", "Which brewery?"),
-                        RetryPrompt = MessageFactory.Text("I probably drank too much. Which brewery was it?", "I probably drank too much. Which brewery was it?"),
+                        Prompt = MessageFactory.Text("Which brewery?", "Which brewery?", InputHints.ExpectingInput),
+                        RetryPrompt = MessageFactory.Text("I probably drank too much. Which brewery was it?", "I probably drank too much. Which brewery was it?", InputHints.ExpectingInput),
                         Choices = ChoiceFactory.ToChoices(breweries.Select(brewery => brewery.Name).ToList()),
                     }, cancellationToken);
                 },
@@ -166,8 +171,8 @@ namespace BeerBot
                     stepContext.Values[categoriesStateEntry] = categories;
                     return await stepContext.PromptAsync(Inputs.Choice, new PromptOptions
                     {
-                        Prompt = MessageFactory.Text("Which kind of beer do you like?", "Which kind of beer do you like?"),
-                        RetryPrompt = MessageFactory.Text("I probably drank too much. Which beer type was it?", "I probably drank too much. Which beer type was it?"),
+                        Prompt = MessageFactory.Text("Which kind of beer do you like?", "Which kind of beer do you like?", InputHints.ExpectingInput),
+                        RetryPrompt = MessageFactory.Text("I probably drank too much. Which beer type was it?", "I probably drank too much. Which beer type was it?", InputHints.ExpectingInput),
                         Choices = ChoiceFactory.ToChoices(categories.Select(category => category.Name).ToList()),
                     }, cancellationToken);
                 },
@@ -180,8 +185,8 @@ namespace BeerBot
 
                     return await stepContext.PromptAsync(Inputs.Choice, new PromptOptions
                     {
-                        Prompt = MessageFactory.Text("Which style?", "Which style?"),
-                        RetryPrompt = MessageFactory.Text("I probably drank too much. Which style was it?", "I probably drank too much. Which style was it?"),
+                        Prompt = MessageFactory.Text("Which style?", "Which style?", InputHints.ExpectingInput),
+                        RetryPrompt = MessageFactory.Text("I probably drank too much. Which style was it?", "I probably drank too much. Which style was it?", InputHints.ExpectingInput),
                         Choices = ChoiceFactory.ToChoices(styles.Select(style => style.Name).ToList()),
                     }, cancellationToken);
                 },
@@ -224,8 +229,8 @@ namespace BeerBot
                             var choices = ChoiceFactory.ToChoices(beers.Select(beer => beer.Name).ToList());
                             return await stepContext.PromptAsync(Inputs.Choice, new PromptOptions
                             {
-                                Prompt = MessageFactory.Text("Which one of these works?", "Which one of these works?"),
-                                RetryPrompt = MessageFactory.Text("I probably drank too much. Which one of these work?", "I probably drank too much. Which one of these work?"),
+                                Prompt = MessageFactory.Text("Which one of these works?", "Which one of these works?", InputHints.ExpectingInput),
+                                RetryPrompt = MessageFactory.Text("I probably drank too much. Which one of these work?", "I probably drank too much. Which one of these work?", InputHints.ExpectingInput),
                                 Choices = choices,
                             }, cancellationToken);
                         }
@@ -244,7 +249,8 @@ namespace BeerBot
                     {
                         Prompt = MessageFactory.Text(
                             $"Just making sure I got it right. Do you want a '{choice.Value}'?",
-                            $"Just making sure I got it right. Do you want a '{choice.Value}'?"),
+                            $"Just making sure I got it right. Do you want a '{choice.Value}'?",
+                            InputHints.ExpectingInput),
                     }, cancellationToken);
 
                 },

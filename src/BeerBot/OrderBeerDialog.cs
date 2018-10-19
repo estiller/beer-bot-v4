@@ -6,6 +6,7 @@ using BeerBot.Emojis;
 using Microsoft.Bot.Builder;
 using Microsoft.Bot.Builder.Dialogs;
 using Microsoft.Bot.Builder.Dialogs.Choices;
+using Microsoft.Bot.Schema;
 
 namespace BeerBot
 {
@@ -53,7 +54,8 @@ namespace BeerBot
                     {
                         Prompt = MessageFactory.Text(
                             $"Would you like your usual {usualBeer}?",
-                            $"Would you like your usual {usualBeer}?"),
+                            $"Would you like your usual {usualBeer}?",
+                            InputHints.ExpectingInput),
                     }, cancellationToken);
                 },
                 (stepContext, cancellationToken) =>
@@ -67,7 +69,7 @@ namespace BeerBot
 
                     return stepContext.PromptAsync(Inputs.Text, new PromptOptions
                     {
-                        Prompt = MessageFactory.Text("So what can I offer you instead?", "So what can I offer you instead?"),
+                        Prompt = MessageFactory.Text("So what can I offer you instead?", "So what can I offer you instead?", InputHints.ExpectingInput),
                     }, cancellationToken);
                 },
                 (stepContext, cancellationToken) =>
@@ -95,7 +97,7 @@ namespace BeerBot
 
                     return await stepContext.PromptAsync(Inputs.Text, new PromptOptions
                     {
-                        Prompt = MessageFactory.Text("What beer would you like to order?", "What beer would you like to order?"),
+                        Prompt = MessageFactory.Text("What beer would you like to order?", "What beer would you like to order?", InputHints.ExpectingInput),
 
                     }, cancellationToken);
                 },
@@ -166,10 +168,12 @@ namespace BeerBot
                     {
                         Prompt = MessageFactory.Text(
                             "Which chaser would you like next to your beer?", 
-                            "Which chaser would you like next to your beer?"),
+                            "Which chaser would you like next to your beer?",
+                            InputHints.ExpectingInput),
                         RetryPrompt = MessageFactory.Text(
                             "I probably drank too much. Which chaser would you like next to your beer?",
-                            "I probably drank too much. Which chaser would you like next to your beer?"),
+                            "I probably drank too much. Which chaser would you like next to your beer?",
+                            InputHints.ExpectingInput),
                         Choices = ChoiceFactory.ToChoices(PossibleChasers),
                     }, cancellationToken);
                 },
@@ -191,10 +195,12 @@ namespace BeerBot
                     {
                         Prompt = MessageFactory.Text(
                             "How about something to eat?", 
-                            "How about something to eat?"),
+                            "How about something to eat?",
+                            InputHints.ExpectingInput),
                         RetryPrompt = MessageFactory.Text(
                             "I probably drank too much. Which side dish would you like next to your beer?",
-                            "I probably drank too much. Which side dish would you like next to your beer?"),
+                            "I probably drank too much. Which side dish would you like next to your beer?",
+                            InputHints.ExpectingInput),
                         Choices = ChoiceFactory.ToChoices(PossibleSideDishs),
                     }, cancellationToken);
                 },
@@ -211,7 +217,8 @@ namespace BeerBot
                     {
                         Prompt = MessageFactory.Text(
                             $"Just to make sure, do you want a {beerOrder.BeerName} beer with {beerOrder.Chaser} and some {beerOrder.Side} on the side?",
-                            $"Just to make sure, do you want a {beerOrder.BeerName} beer with {beerOrder.Chaser} and some {beerOrder.Side} on the side?")
+                            $"Just to make sure, do you want a {beerOrder.BeerName} beer with {beerOrder.Chaser} and some {beerOrder.Side} on the side?",
+                            InputHints.ExpectingInput)
                     }, cancellationToken);
                 },
                 async (stepContext, cancellationToken) =>
@@ -221,7 +228,10 @@ namespace BeerBot
                     {
                         var beerOrder = (BeerOrder) stepContext.Values[orderStateEntry];
                         await _userInfo.SetAsync(stepContext.Context, new UserInfo { UsualBeer = beerOrder.BeerName }, cancellationToken);
-                        await stepContext.Context.SendActivityAsync($"Cheers {Emoji.Beers}", "Cheers!", cancellationToken: cancellationToken);
+                        await stepContext.Context.SendActivityAsync(
+                            $"Cheers {Emoji.Beers}",
+                            @"<speak version=""1.0"" xmlns=""https://www.w3.org/2001/10/synthesis"" xml:lang=""en-US""><prosody pitch=""high"">Cheers</prosody></speak>", 
+                            cancellationToken: cancellationToken);
                     }
                     else
                     {
