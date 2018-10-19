@@ -4,7 +4,7 @@
     "services": [
         {
             "type": "endpoint",
-            "name": "Development",
+            "name": "BeerBot",
             "endpoint": "http://localhost:3978/api/messages",
             "appId": "",
             "appPassword": "",
@@ -12,14 +12,21 @@
         },
         {
             "type": "generic",
+            "name": "BeerApi",
+            "url": "http://localhost:59855",
+            "configuration": {},
+            "id": "192"
+        },
+        {
+            "type": "generic",
             "name": "ImageSearch",
             "url": "https://api.cognitive.microsoft.com/bing/v7.0/images/search",
             "configuration": {
-                "key": "2QB/zHCo0XDLBN79vGFJYg==!jJfTzt6o+0CSDOMJUNlUg9r8Wu8pkP2UN5QfG9drEDgR/u0gINP+VLy3XUnrsL5A"
+                "key": "iTiWTJ6brB+ueto2pXYCIA==!JXPiznyCMos5JC7uOqCFaYcG6SU5onKytHcvXzwG1agXX1S4z+JPkJPENYIihUds"
             },
-            "id": "59"
+            "id": "240"
         }
     ],
-    "padlock": "sWD/3ik+d9YWZWIGRWogig==!a92A+O83FTg/vOZRn7VQmF26zcCle5VaWSQFTa3mltB15rLywCVaJyU0Wbt848ly",
+    "padlock": "ohskYweTmuy+1Vi/WDGZZw==!vFZ6/vg1voLA2zxQeksYGrIylVDlfbjb6cHfqCwD5eemT8Fql58WoVMCUWHDh5Gl",
     "version": "2.0"
 }

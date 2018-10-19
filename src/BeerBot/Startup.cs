@@ -19,12 +19,8 @@ namespace BeerBot
 {
     public class Startup
     {
-        private readonly IHostingEnvironment _hostingEnvironment;
-
         public Startup(IHostingEnvironment env)
         {
-            _hostingEnvironment = env;
-
             var builder = new ConfigurationBuilder()
                 .SetBasePath(env.ContentRootPath)
                 .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
@@ -52,11 +48,7 @@ namespace BeerBot
         {
             services.AddBot<BeerBot>(options =>
             {
-                var service = BotConfiguration.Services.FirstOrDefault(s => s.Type == "endpoint" && s.Name == _hostingEnvironment.EnvironmentName);
-                if (!(service is EndpointService endpointService))
-                {
-                    throw new InvalidOperationException($"The .bot file does not contain an endpoint with name '{_hostingEnvironment.EnvironmentName}'.");
-                }
+                var endpointService = (EndpointService) BotConfiguration.Services.First(s => s.Type == "endpoint");
 
                 options.CredentialProvider = new SimpleCredentialProvider(endpointService.AppId, endpointService.AppPassword);
 
@@ -82,10 +74,14 @@ namespace BeerBot
                 };
             });
 
-            services.AddSingleton<IBeerApi, BeerApi>(sp => new BeerApi(new Uri(Configuration.GetValue<string>("BeerApiBaseUrl"))));
+            services.AddSingleton<IBeerApi, BeerApi>(sp =>
+            {
+                var beerApiConfig = (GenericService) BotConfiguration.Services.First(service => service.Name == "BeerApi");
+                return new BeerApi(new Uri(beerApiConfig.Url));
+            });
             services.AddSingleton<IImageSearchService, ImageSearchService>(sp =>
             {
-                var imageSearchConfig = (GenericService) BotConfiguration.Services.First(service => service.Name == "ImageSearch");
+                var imageSearchConfig = (GenericService)BotConfiguration.Services.First(service => service.Name == "ImageSearch");
                 return new ImageSearchService(imageSearchConfig.Url, imageSearchConfig.Configuration["key"]);
             });
         }
