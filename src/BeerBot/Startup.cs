@@ -1,80 +1,56 @@
 ﻿using System;
-using System.Linq;
 using BeerBot.BeerApiClient;
+using BeerBot.Hosting;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.Bot.Builder;
 using Microsoft.Bot.Builder.Integration.AspNet.Core;
-using Microsoft.Bot.Builder.TraceExtensions;
-using Microsoft.Bot.Configuration;
-using Microsoft.Bot.Connector.Authentication;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 
 namespace BeerBot
 {
     public class Startup
     {
-        private readonly IHostingEnvironment _hostingEnvironment;
+        private readonly IConfiguration _configuration;
 
-        public Startup(IHostingEnvironment env)
+        public Startup(IConfiguration configuration)
         {
-            _hostingEnvironment = env;
-
-            var builder = new ConfigurationBuilder()
-                .SetBasePath(env.ContentRootPath)
-                .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
-                .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true)
-                .AddEnvironmentVariables();
-
-            if (env.IsDevelopment())
-            {
-                builder.AddUserSecrets<Startup>();
-            }
-
-            Configuration = builder.Build();
-
-            var secretKey = Configuration.GetSection("botFileSecret")?.Value;
-            var botFilePath = Configuration.GetSection("botFilePath")?.Value;
-            BotConfiguration = BotConfiguration.Load(botFilePath ?? @".\BeerBot.bot", secretKey) ??
-                               throw new InvalidOperationException($"The .bot config file could not be loaded. ({botFilePath})");
+            _configuration = configuration;
         }
-
-        public IConfiguration Configuration { get; }
-
-        public BotConfiguration BotConfiguration { get; }
 
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddBot<BeerBot>(options =>
-            {
-                var endpointService = (EndpointService) BotConfiguration.Services.First(s => s.Type == "endpoint" && s.Name == _hostingEnvironment.EnvironmentName);
-
-                options.CredentialProvider = new SimpleCredentialProvider(endpointService.AppId, endpointService.AppPassword);
-
-                options.OnTurnError = async (context, exception) =>
-                {
-                    await context.TraceActivityAsync("BeerBot Exception", exception);
-                    await context.SendActivityAsync("Sorry, it looks like something went wrong!");
-                };
-            });
+            services.AddControllers();
+            services.AddSingleton<IBotFrameworkHttpAdapter, AdapterWithErrorHandler>();
+            services.AddTransient<IBot, Bots.BeerBot>();
 
             services.AddSingleton<IBeerApi, BeerApi>(sp =>
             {
-                var beerApiConfig = (GenericService) BotConfiguration.Services.First(service => service.Name == $"BeerApi-{_hostingEnvironment.EnvironmentName}");
-                return new BeerApi(new Uri(beerApiConfig.Url));
+                var beerApiUrl = new Uri(_configuration.GetSection("BeerApiUrl").Value);
+                return new BeerApi(beerApiUrl);
             });
         }
 
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
             }
 
-            app.UseDefaultFiles()
-                .UseStaticFiles()
-                .UseBotFramework();
+            app.UseDefaultFiles();
+            app.UseStaticFiles();
+
+            app.UseAuthorization();
+
+            app.UseWebSockets();
+            app.UseRouting();
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.MapControllers();
+            });
         }
     }
 }

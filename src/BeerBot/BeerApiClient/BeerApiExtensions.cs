@@ -32,9 +32,9 @@ namespace BeerBot.BeerApiClient
             /// </param>
             /// <param name='maxAbv'>
             /// </param>
-            public static IList<Beer> BeersGet(this IBeerApi operations, IList<string> searchTerm = default(IList<string>), IList<int?> breweryId = default(IList<int?>), IList<int?> categoryId = default(IList<int?>), IList<int?> styleId = default(IList<int?>), double? minAbv = default(double?), double? maxAbv = default(double?))
+            public static IList<Beer> GetBeers(this IBeerApi operations, IList<string> searchTerm = default(IList<string>), IList<int?> breweryId = default(IList<int?>), IList<int?> categoryId = default(IList<int?>), IList<int?> styleId = default(IList<int?>), double? minAbv = default(double?), double? maxAbv = default(double?))
             {
-                return operations.BeersGetAsync(searchTerm, breweryId, categoryId, styleId, minAbv, maxAbv).GetAwaiter().GetResult();
+                return operations.GetBeersAsync(searchTerm, breweryId, categoryId, styleId, minAbv, maxAbv).GetAwaiter().GetResult();
             }
 
             /// <param name='operations'>
@@ -55,9 +55,9 @@ namespace BeerBot.BeerApiClient
             /// <param name='cancellationToken'>
             /// The cancellation token.
             /// </param>
-            public static async Task<IList<Beer>> BeersGetAsync(this IBeerApi operations, IList<string> searchTerm = default(IList<string>), IList<int?> breweryId = default(IList<int?>), IList<int?> categoryId = default(IList<int?>), IList<int?> styleId = default(IList<int?>), double? minAbv = default(double?), double? maxAbv = default(double?), CancellationToken cancellationToken = default(CancellationToken))
+            public static async Task<IList<Beer>> GetBeersAsync(this IBeerApi operations, IList<string> searchTerm = default(IList<string>), IList<int?> breweryId = default(IList<int?>), IList<int?> categoryId = default(IList<int?>), IList<int?> styleId = default(IList<int?>), double? minAbv = default(double?), double? maxAbv = default(double?), CancellationToken cancellationToken = default(CancellationToken))
             {
-                using (var _result = await operations.BeersGetWithHttpMessagesAsync(searchTerm, breweryId, categoryId, styleId, minAbv, maxAbv, null, cancellationToken).ConfigureAwait(false))
+                using (var _result = await operations.GetBeersWithHttpMessagesAsync(searchTerm, breweryId, categoryId, styleId, minAbv, maxAbv, null, cancellationToken).ConfigureAwait(false))
                 {
                     return _result.Body;
                 }
@@ -66,9 +66,9 @@ namespace BeerBot.BeerApiClient
             /// <param name='operations'>
             /// The operations group for this extension method.
             /// </param>
-            public static Beer BeersRandomGet(this IBeerApi operations)
+            public static Beer GetRandomBeer(this IBeerApi operations)
             {
-                return operations.BeersRandomGetAsync().GetAwaiter().GetResult();
+                return operations.GetRandomBeerAsync().GetAwaiter().GetResult();
             }
 
             /// <param name='operations'>
@@ -77,9 +77,9 @@ namespace BeerBot.BeerApiClient
             /// <param name='cancellationToken'>
             /// The cancellation token.
             /// </param>
-            public static async Task<Beer> BeersRandomGetAsync(this IBeerApi operations, CancellationToken cancellationToken = default(CancellationToken))
+            public static async Task<Beer> GetRandomBeerAsync(this IBeerApi operations, CancellationToken cancellationToken = default(CancellationToken))
             {
-                using (var _result = await operations.BeersRandomGetWithHttpMessagesAsync(null, cancellationToken).ConfigureAwait(false))
+                using (var _result = await operations.GetRandomBeerWithHttpMessagesAsync(null, cancellationToken).ConfigureAwait(false))
                 {
                     return _result.Body;
                 }
@@ -90,9 +90,9 @@ namespace BeerBot.BeerApiClient
             /// </param>
             /// <param name='id'>
             /// </param>
-            public static Beer BeersByIdGet(this IBeerApi operations, int id)
+            public static Beer GetBeerById(this IBeerApi operations, int id)
             {
-                return operations.BeersByIdGetAsync(id).GetAwaiter().GetResult();
+                return operations.GetBeerByIdAsync(id).GetAwaiter().GetResult();
             }
 
             /// <param name='operations'>
@@ -103,9 +103,9 @@ namespace BeerBot.BeerApiClient
             /// <param name='cancellationToken'>
             /// The cancellation token.
             /// </param>
-            public static async Task<Beer> BeersByIdGetAsync(this IBeerApi operations, int id, CancellationToken cancellationToken = default(CancellationToken))
+            public static async Task<Beer> GetBeerByIdAsync(this IBeerApi operations, int id, CancellationToken cancellationToken = default(CancellationToken))
             {
-                using (var _result = await operations.BeersByIdGetWithHttpMessagesAsync(id, null, cancellationToken).ConfigureAwait(false))
+                using (var _result = await operations.GetBeerByIdWithHttpMessagesAsync(id, null, cancellationToken).ConfigureAwait(false))
                 {
                     return _result.Body;
                 }
@@ -118,9 +118,9 @@ namespace BeerBot.BeerApiClient
             /// </param>
             /// <param name='country'>
             /// </param>
-            public static IList<Brewery> BreweriesGet(this IBeerApi operations, IList<string> searchTerm = default(IList<string>), IList<string> country = default(IList<string>))
+            public static IList<Brewery> GetBreweries(this IBeerApi operations, IList<string> searchTerm = default(IList<string>), IList<string> country = default(IList<string>))
             {
-                return operations.BreweriesGetAsync(searchTerm, country).GetAwaiter().GetResult();
+                return operations.GetBreweriesAsync(searchTerm, country).GetAwaiter().GetResult();
             }
 
             /// <param name='operations'>
@@ -133,9 +133,9 @@ namespace BeerBot.BeerApiClient
             /// <param name='cancellationToken'>
             /// The cancellation token.
             /// </param>
-            public static async Task<IList<Brewery>> BreweriesGetAsync(this IBeerApi operations, IList<string> searchTerm = default(IList<string>), IList<string> country = default(IList<string>), CancellationToken cancellationToken = default(CancellationToken))
+            public static async Task<IList<Brewery>> GetBreweriesAsync(this IBeerApi operations, IList<string> searchTerm = default(IList<string>), IList<string> country = default(IList<string>), CancellationToken cancellationToken = default(CancellationToken))
             {
-                using (var _result = await operations.BreweriesGetWithHttpMessagesAsync(searchTerm, country, null, cancellationToken).ConfigureAwait(false))
+                using (var _result = await operations.GetBreweriesWithHttpMessagesAsync(searchTerm, country, null, cancellationToken).ConfigureAwait(false))
                 {
                     return _result.Body;
                 }
@@ -146,9 +146,9 @@ namespace BeerBot.BeerApiClient
             /// </param>
             /// <param name='id'>
             /// </param>
-            public static Brewery BreweriesByIdGet(this IBeerApi operations, int id)
+            public static Brewery GetBreweryById(this IBeerApi operations, int id)
             {
-                return operations.BreweriesByIdGetAsync(id).GetAwaiter().GetResult();
+                return operations.GetBreweryByIdAsync(id).GetAwaiter().GetResult();
             }
 
             /// <param name='operations'>
@@ -159,9 +159,9 @@ namespace BeerBot.BeerApiClient
             /// <param name='cancellationToken'>
             /// The cancellation token.
             /// </param>
-            public static async Task<Brewery> BreweriesByIdGetAsync(this IBeerApi operations, int id, CancellationToken cancellationToken = default(CancellationToken))
+            public static async Task<Brewery> GetBreweryByIdAsync(this IBeerApi operations, int id, CancellationToken cancellationToken = default(CancellationToken))
             {
-                using (var _result = await operations.BreweriesByIdGetWithHttpMessagesAsync(id, null, cancellationToken).ConfigureAwait(false))
+                using (var _result = await operations.GetBreweryByIdWithHttpMessagesAsync(id, null, cancellationToken).ConfigureAwait(false))
                 {
                     return _result.Body;
                 }
@@ -170,9 +170,9 @@ namespace BeerBot.BeerApiClient
             /// <param name='operations'>
             /// The operations group for this extension method.
             /// </param>
-            public static IList<string> BreweriesCountriesGet(this IBeerApi operations)
+            public static IList<string> GetBreweriesCountries(this IBeerApi operations)
             {
-                return operations.BreweriesCountriesGetAsync().GetAwaiter().GetResult();
+                return operations.GetBreweriesCountriesAsync().GetAwaiter().GetResult();
             }
 
             /// <param name='operations'>
@@ -181,9 +181,9 @@ namespace BeerBot.BeerApiClient
             /// <param name='cancellationToken'>
             /// The cancellation token.
             /// </param>
-            public static async Task<IList<string>> BreweriesCountriesGetAsync(this IBeerApi operations, CancellationToken cancellationToken = default(CancellationToken))
+            public static async Task<IList<string>> GetBreweriesCountriesAsync(this IBeerApi operations, CancellationToken cancellationToken = default(CancellationToken))
             {
-                using (var _result = await operations.BreweriesCountriesGetWithHttpMessagesAsync(null, cancellationToken).ConfigureAwait(false))
+                using (var _result = await operations.GetBreweriesCountriesWithHttpMessagesAsync(null, cancellationToken).ConfigureAwait(false))
                 {
                     return _result.Body;
                 }
@@ -194,9 +194,9 @@ namespace BeerBot.BeerApiClient
             /// </param>
             /// <param name='searchTerm'>
             /// </param>
-            public static IList<Category> CategoriesGet(this IBeerApi operations, IList<string> searchTerm = default(IList<string>))
+            public static IList<Category> GetCategories(this IBeerApi operations, IList<string> searchTerm = default(IList<string>))
             {
-                return operations.CategoriesGetAsync(searchTerm).GetAwaiter().GetResult();
+                return operations.GetCategoriesAsync(searchTerm).GetAwaiter().GetResult();
             }
 
             /// <param name='operations'>
@@ -207,9 +207,9 @@ namespace BeerBot.BeerApiClient
             /// <param name='cancellationToken'>
             /// The cancellation token.
             /// </param>
-            public static async Task<IList<Category>> CategoriesGetAsync(this IBeerApi operations, IList<string> searchTerm = default(IList<string>), CancellationToken cancellationToken = default(CancellationToken))
+            public static async Task<IList<Category>> GetCategoriesAsync(this IBeerApi operations, IList<string> searchTerm = default(IList<string>), CancellationToken cancellationToken = default(CancellationToken))
             {
-                using (var _result = await operations.CategoriesGetWithHttpMessagesAsync(searchTerm, null, cancellationToken).ConfigureAwait(false))
+                using (var _result = await operations.GetCategoriesWithHttpMessagesAsync(searchTerm, null, cancellationToken).ConfigureAwait(false))
                 {
                     return _result.Body;
                 }
@@ -220,9 +220,9 @@ namespace BeerBot.BeerApiClient
             /// </param>
             /// <param name='id'>
             /// </param>
-            public static Category CategoriesByIdGet(this IBeerApi operations, int id)
+            public static Category GetCategoryById(this IBeerApi operations, int id)
             {
-                return operations.CategoriesByIdGetAsync(id).GetAwaiter().GetResult();
+                return operations.GetCategoryByIdAsync(id).GetAwaiter().GetResult();
             }
 
             /// <param name='operations'>
@@ -233,24 +233,12 @@ namespace BeerBot.BeerApiClient
             /// <param name='cancellationToken'>
             /// The cancellation token.
             /// </param>
-            public static async Task<Category> CategoriesByIdGetAsync(this IBeerApi operations, int id, CancellationToken cancellationToken = default(CancellationToken))
+            public static async Task<Category> GetCategoryByIdAsync(this IBeerApi operations, int id, CancellationToken cancellationToken = default(CancellationToken))
             {
-                using (var _result = await operations.CategoriesByIdGetWithHttpMessagesAsync(id, null, cancellationToken).ConfigureAwait(false))
+                using (var _result = await operations.GetCategoryByIdWithHttpMessagesAsync(id, null, cancellationToken).ConfigureAwait(false))
                 {
                     return _result.Body;
                 }
-            }
-
-            /// <param name='operations'>
-            /// The operations group for this extension method.
-            /// </param>
-            /// <param name='searchTerm'>
-            /// </param>
-            /// <param name='categoryId'>
-            /// </param>
-            public static IList<Style> StylesGet(this IBeerApi operations, IList<string> searchTerm = default(IList<string>), IList<int?> categoryId = default(IList<int?>))
-            {
-                return operations.StylesGetAsync(searchTerm, categoryId).GetAwaiter().GetResult();
             }
 
             /// <param name='operations'>
@@ -260,12 +248,24 @@ namespace BeerBot.BeerApiClient
             /// </param>
             /// <param name='categoryId'>
             /// </param>
+            public static IList<Style> GetStyles(this IBeerApi operations, IList<string> searchTerm = default(IList<string>), IList<int?> categoryId = default(IList<int?>))
+            {
+                return operations.GetStylesAsync(searchTerm, categoryId).GetAwaiter().GetResult();
+            }
+
+            /// <param name='operations'>
+            /// The operations group for this extension method.
+            /// </param>
+            /// <param name='searchTerm'>
+            /// </param>
+            /// <param name='categoryId'>
+            /// </param>
             /// <param name='cancellationToken'>
             /// The cancellation token.
             /// </param>
-            public static async Task<IList<Style>> StylesGetAsync(this IBeerApi operations, IList<string> searchTerm = default(IList<string>), IList<int?> categoryId = default(IList<int?>), CancellationToken cancellationToken = default(CancellationToken))
+            public static async Task<IList<Style>> GetStylesAsync(this IBeerApi operations, IList<string> searchTerm = default(IList<string>), IList<int?> categoryId = default(IList<int?>), CancellationToken cancellationToken = default(CancellationToken))
             {
-                using (var _result = await operations.StylesGetWithHttpMessagesAsync(searchTerm, categoryId, null, cancellationToken).ConfigureAwait(false))
+                using (var _result = await operations.GetStylesWithHttpMessagesAsync(searchTerm, categoryId, null, cancellationToken).ConfigureAwait(false))
                 {
                     return _result.Body;
                 }
@@ -276,9 +276,9 @@ namespace BeerBot.BeerApiClient
             /// </param>
             /// <param name='id'>
             /// </param>
-            public static Style StylesByIdGet(this IBeerApi operations, int id)
+            public static Style GetStyleById(this IBeerApi operations, int id)
             {
-                return operations.StylesByIdGetAsync(id).GetAwaiter().GetResult();
+                return operations.GetStyleByIdAsync(id).GetAwaiter().GetResult();
             }
 
             /// <param name='operations'>
@@ -289,9 +289,9 @@ namespace BeerBot.BeerApiClient
             /// <param name='cancellationToken'>
             /// The cancellation token.
             /// </param>
-            public static async Task<Style> StylesByIdGetAsync(this IBeerApi operations, int id, CancellationToken cancellationToken = default(CancellationToken))
+            public static async Task<Style> GetStyleByIdAsync(this IBeerApi operations, int id, CancellationToken cancellationToken = default(CancellationToken))
             {
-                using (var _result = await operations.StylesByIdGetWithHttpMessagesAsync(id, null, cancellationToken).ConfigureAwait(false))
+                using (var _result = await operations.GetStyleByIdWithHttpMessagesAsync(id, null, cancellationToken).ConfigureAwait(false))
                 {
                     return _result.Body;
                 }

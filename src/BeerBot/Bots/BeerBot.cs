@@ -7,7 +7,7 @@ using BeerBot.Emojis;
 using Microsoft.Bot.Builder;
 using Microsoft.Bot.Schema;
 
-namespace BeerBot
+namespace BeerBot.Bots
 {
     public class BeerBot : IBot
     {
@@ -46,7 +46,7 @@ namespace BeerBot
                     await turnContext.SendActivityAsync("Welcome to your friendly neighborhood bot-tender! How can I help you?", cancellationToken: cancellationToken);
                     break;
                 case var text when Regex.IsMatch(text, ".*random.*", RegexOptions.IgnoreCase):
-                    var beer = await _beerService.BeersRandomGetAsync(cancellationToken);
+                    var beer = await _beerService.GetRandomBeerAsync(cancellationToken);
                     await turnContext.SendActivityAsync($"You should definitely get a {beer.Name}", cancellationToken: cancellationToken);
                     break;
                 case var text when Regex.IsMatch(text, ".*help.*", RegexOptions.IgnoreCase):

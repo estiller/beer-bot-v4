@@ -52,7 +52,7 @@ namespace BeerBot.BeerApiClient
         /// <param name='cancellationToken'>
         /// The cancellation token.
         /// </param>
-        Task<HttpOperationResponse<IList<Beer>>> BeersGetWithHttpMessagesAsync(IList<string> searchTerm = default(IList<string>), IList<int?> breweryId = default(IList<int?>), IList<int?> categoryId = default(IList<int?>), IList<int?> styleId = default(IList<int?>), double? minAbv = default(double?), double? maxAbv = default(double?), Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
+        Task<HttpOperationResponse<IList<Beer>>> GetBeersWithHttpMessagesAsync(IList<string> searchTerm = default(IList<string>), IList<int?> breweryId = default(IList<int?>), IList<int?> categoryId = default(IList<int?>), IList<int?> styleId = default(IList<int?>), double? minAbv = default(double?), double? maxAbv = default(double?), Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
 
         /// <param name='customHeaders'>
         /// The headers that will be added to request.
@@ -60,7 +60,7 @@ namespace BeerBot.BeerApiClient
         /// <param name='cancellationToken'>
         /// The cancellation token.
         /// </param>
-        Task<HttpOperationResponse<Beer>> BeersRandomGetWithHttpMessagesAsync(Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
+        Task<HttpOperationResponse<Beer>> GetRandomBeerWithHttpMessagesAsync(Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
 
         /// <param name='id'>
         /// </param>
@@ -70,7 +70,7 @@ namespace BeerBot.BeerApiClient
         /// <param name='cancellationToken'>
         /// The cancellation token.
         /// </param>
-        Task<HttpOperationResponse<Beer>> BeersByIdGetWithHttpMessagesAsync(int id, Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
+        Task<HttpOperationResponse<Beer>> GetBeerByIdWithHttpMessagesAsync(int id, Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
 
         /// <param name='searchTerm'>
         /// </param>
@@ -82,7 +82,7 @@ namespace BeerBot.BeerApiClient
         /// <param name='cancellationToken'>
         /// The cancellation token.
         /// </param>
-        Task<HttpOperationResponse<IList<Brewery>>> BreweriesGetWithHttpMessagesAsync(IList<string> searchTerm = default(IList<string>), IList<string> country = default(IList<string>), Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
+        Task<HttpOperationResponse<IList<Brewery>>> GetBreweriesWithHttpMessagesAsync(IList<string> searchTerm = default(IList<string>), IList<string> country = default(IList<string>), Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
 
         /// <param name='id'>
         /// </param>
@@ -92,7 +92,7 @@ namespace BeerBot.BeerApiClient
         /// <param name='cancellationToken'>
         /// The cancellation token.
         /// </param>
-        Task<HttpOperationResponse<Brewery>> BreweriesByIdGetWithHttpMessagesAsync(int id, Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
+        Task<HttpOperationResponse<Brewery>> GetBreweryByIdWithHttpMessagesAsync(int id, Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
 
         /// <param name='customHeaders'>
         /// The headers that will be added to request.
@@ -100,7 +100,7 @@ namespace BeerBot.BeerApiClient
         /// <param name='cancellationToken'>
         /// The cancellation token.
         /// </param>
-        Task<HttpOperationResponse<IList<string>>> BreweriesCountriesGetWithHttpMessagesAsync(Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
+        Task<HttpOperationResponse<IList<string>>> GetBreweriesCountriesWithHttpMessagesAsync(Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
 
         /// <param name='searchTerm'>
         /// </param>
@@ -110,7 +110,7 @@ namespace BeerBot.BeerApiClient
         /// <param name='cancellationToken'>
         /// The cancellation token.
         /// </param>
-        Task<HttpOperationResponse<IList<Category>>> CategoriesGetWithHttpMessagesAsync(IList<string> searchTerm = default(IList<string>), Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
+        Task<HttpOperationResponse<IList<Category>>> GetCategoriesWithHttpMessagesAsync(IList<string> searchTerm = default(IList<string>), Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
 
         /// <param name='id'>
         /// </param>
@@ -120,7 +120,7 @@ namespace BeerBot.BeerApiClient
         /// <param name='cancellationToken'>
         /// The cancellation token.
         /// </param>
-        Task<HttpOperationResponse<Category>> CategoriesByIdGetWithHttpMessagesAsync(int id, Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
+        Task<HttpOperationResponse<Category>> GetCategoryByIdWithHttpMessagesAsync(int id, Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
 
         /// <param name='searchTerm'>
         /// </param>
@@ -132,7 +132,7 @@ namespace BeerBot.BeerApiClient
         /// <param name='cancellationToken'>
         /// The cancellation token.
         /// </param>
-        Task<HttpOperationResponse<IList<Style>>> StylesGetWithHttpMessagesAsync(IList<string> searchTerm = default(IList<string>), IList<int?> categoryId = default(IList<int?>), Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
+        Task<HttpOperationResponse<IList<Style>>> GetStylesWithHttpMessagesAsync(IList<string> searchTerm = default(IList<string>), IList<int?> categoryId = default(IList<int?>), Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
 
         /// <param name='id'>
         /// </param>
@@ -142,7 +142,7 @@ namespace BeerBot.BeerApiClient
         /// <param name='cancellationToken'>
         /// The cancellation token.
         /// </param>
-        Task<HttpOperationResponse<Style>> StylesByIdGetWithHttpMessagesAsync(int id, Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
+        Task<HttpOperationResponse<Style>> GetStyleByIdWithHttpMessagesAsync(int id, Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
 
     }
 }
