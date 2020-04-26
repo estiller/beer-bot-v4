@@ -16,7 +16,7 @@ namespace BeerBot.BeerApi.Controllers
             _repository = repository;
         }
 
-        [HttpGet]
+        [HttpGet(Name = "GetStyles")]
         public IEnumerable<Style> Get(
             [FromQuery(Name = "searchTerm")] string[] searchTerms,
             [FromQuery(Name = "categoryId")] int[] categoryIds)
@@ -26,7 +26,7 @@ namespace BeerBot.BeerApi.Controllers
                 .FilterBy(categoryIds, s => s.CategoryId);
         }
 
-        [HttpGet("{id}")]
+        [HttpGet("{id}", Name = "GetStyleById")]
         public Style Get(int id)
         {
             return _repository.GetById(id);

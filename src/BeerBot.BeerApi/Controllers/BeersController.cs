@@ -16,7 +16,7 @@ namespace BeerBot.BeerApi.Controllers
             _repository = repository;
         }
 
-        [HttpGet]
+        [HttpGet(Name = "GetBeers")]
         public IEnumerable<Beer> Get(
             [FromQuery(Name = "searchTerm")] string[] searchTerms,
             [FromQuery(Name = "breweryId")] int[] breweryIds,
@@ -32,13 +32,13 @@ namespace BeerBot.BeerApi.Controllers
                 .FilterByRange(minAbv, maxAbv, b => b.Abv);
         }
 
-        [HttpGet("random")]
+        [HttpGet("random", Name = "GetRandomBeer")]
         public Beer GetRandomBeer()
         {
             return _repository.GetRandom();
         }
 
-        [HttpGet("{id}")]
+        [HttpGet("{id}", Name = "GetBeerById")]
         public Beer Get(int id)
         {
             return _repository.GetById(id);

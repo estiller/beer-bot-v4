@@ -18,7 +18,7 @@ namespace BeerBot.BeerApi.Controllers
             _repository = repository;
         }
 
-        [HttpGet]
+        [HttpGet(Name = "GetBreweries")]
         public IEnumerable<Brewery> Get(
             [FromQuery(Name = "searchTerm")] string[] searchTerms,
             [FromQuery(Name = "country")] string[] countries)
@@ -28,13 +28,13 @@ namespace BeerBot.BeerApi.Controllers
                 .FilterBySearchTerms(countries, b => b.Country);
         }
 
-        [HttpGet("{id}")]
+        [HttpGet("{id}", Name = "GetBreweryById")]
         public Brewery Get(int id)
         {
             return _repository.GetById(id);
         }
 
-        [HttpGet("countries")]
+        [HttpGet("countries", Name = "GetBreweriesCountries")]
         public IEnumerable<string> GetCountries()
         {
             return _repository.Get()
