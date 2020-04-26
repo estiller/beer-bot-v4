@@ -1,4 +1,4 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
@@ -9,7 +9,7 @@ using Microsoft.Bot.Schema;
 
 namespace BeerBot.Bots
 {
-    public class BeerBot : IBot
+    public class BeerBot : ActivityHandler
     {
         private readonly IBeerApi _beerService;
 
@@ -18,27 +18,7 @@ namespace BeerBot.Bots
             _beerService = beerService;
         }
 
-        public async Task OnTurnAsync(ITurnContext turnContext, CancellationToken cancellationToken = default(CancellationToken))
-        {
-            switch (turnContext.Activity.Type)
-            {
-                case ActivityTypes.Message:
-                    await HandleMessageAsync(turnContext, cancellationToken);
-                    if (!turnContext.Responded)
-                    {
-                        await turnContext.SendActivityAsync(
-                            "I didn't quite understand what you are saying! You can type \"help\" for more information",
-                            cancellationToken: cancellationToken);
-                    }
-                    break;
-                case ActivityTypes.ConversationUpdate:
-                    await GreetAddedMembersAsync(turnContext, cancellationToken);
-                    break;
-            }
-
-        }
-
-        private async Task HandleMessageAsync(ITurnContext turnContext, CancellationToken cancellationToken)
+        protected override async Task OnMessageActivityAsync(ITurnContext<IMessageActivity> turnContext, CancellationToken cancellationToken)
         {
             switch (turnContext.Activity.Text)
             {
@@ -47,7 +27,7 @@ namespace BeerBot.Bots
                     break;
                 case var text when Regex.IsMatch(text, ".*random.*", RegexOptions.IgnoreCase):
                     var beer = await _beerService.GetRandomBeerAsync(cancellationToken);
-                    await turnContext.SendActivityAsync($"You should definitely get a {beer.Name}", cancellationToken: cancellationToken);
+                    await turnContext.SendActivityAsync($"You should definitely get a {beer.Name} {Emoji.Beer}", cancellationToken: cancellationToken);
                     break;
                 case var text when Regex.IsMatch(text, ".*help.*", RegexOptions.IgnoreCase):
                     await turnContext.SendActivityAsync("You can type 'random' for getting a beer recommendation", cancellationToken: cancellationToken);
@@ -55,18 +35,23 @@ namespace BeerBot.Bots
                 case var text when Regex.IsMatch(text, "^(bye|exit|adios).*", RegexOptions.IgnoreCase):
                     await turnContext.SendActivityAsync($"So soon? Oh well. See you later {Emoji.Wave}", cancellationToken: cancellationToken);
                     break;
+                default:
+                    await turnContext.SendActivityAsync("I didn't quite understand what you are saying! You can type \"help\" for more information",
+                        cancellationToken: cancellationToken);
+                    break;
             }
         }
 
-        private Task GreetAddedMembersAsync(ITurnContext turnContext, CancellationToken cancellationToken)
+        protected override async Task OnMembersAddedAsync(IList<ChannelAccount> membersAdded, ITurnContext<IConversationUpdateActivity> turnContext,
+            CancellationToken cancellationToken)
         {
-            var newMember = turnContext.Activity.MembersAdded.FirstOrDefault();
-            if (newMember != null && newMember.Id != turnContext.Activity.Recipient.Id && !string.IsNullOrWhiteSpace(newMember.Name))
+            foreach (var member in membersAdded)
             {
-                return turnContext.SendActivityAsync($"Howdy {newMember.Name}!", cancellationToken: cancellationToken);
+                if (member.Id != turnContext.Activity.Recipient.Id)
+                {
+                    await turnContext.SendActivityAsync($"Howdy {member.Name ?? "Stranger"}!", cancellationToken: cancellationToken);
+                }
             }
-
-            return Task.CompletedTask;
         }
     }
 }
