@@ -2,6 +2,8 @@
 using System.Reflection;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using CsvHelper;
@@ -37,13 +39,13 @@ namespace BeerBot.BeerApi.Dal
 
         private static T[] LoadEntities(string resourceName, Func<T, int> idSelector)
         {
-            using (var stream = typeof(InMemoryRepository<>).GetTypeInfo().Assembly.GetManifestResourceStream(resourceName))
-            using (var reader = new StreamReader(stream))
-            {
-                var csv = new CsvReader(reader);
-                csv.Configuration.BadDataFound = null;
-                return csv.GetRecords<T>().OrderBy(idSelector).ToArray();
-            }
+            using var stream = typeof(InMemoryRepository<>).GetTypeInfo().Assembly.GetManifestResourceStream(resourceName);
+            Debug.Assert(stream != null);
+            
+            using var reader = new StreamReader(stream);
+            var csv = new CsvReader(reader, CultureInfo.InvariantCulture);
+            csv.Configuration.BadDataFound = null;
+            return csv.GetRecords<T>().OrderBy(idSelector).ToArray();
         }
     }
 }

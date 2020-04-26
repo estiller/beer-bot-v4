@@ -16,14 +16,14 @@ namespace BeerBot.BeerApi.Controllers
             _repository = repository;
         }
 
-        [HttpGet]
+        [HttpGet(Name = "GetCategories")]
         public IEnumerable<Category> Get([FromQuery(Name = "searchTerm")] string[] searchTerms)
         {
             return _repository.Get()
                 .FilterBySearchTerms(searchTerms, c => c.Name);
         }
 
-        [HttpGet("{id}")]
+        [HttpGet("{id}", Name = "GetCategoryById")]
         public Category Get(int id)
         {
             return _repository.GetById(id);
