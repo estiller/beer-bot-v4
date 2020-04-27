@@ -1,5 +1,6 @@
 ﻿using System;
 using BeerBot.BeerApiClient;
+using BeerBot.Dialogs;
 using BeerBot.Hosting;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -24,6 +25,11 @@ namespace BeerBot
         {
             services.AddControllers();
             services.AddSingleton<IBotFrameworkHttpAdapter, AdapterWithErrorHandler>();
+            services.AddSingleton<IStorage, MemoryStorage>();
+            services.AddSingleton<ConversationState>();
+
+            services.AddSingleton<MainDialog>();
+            services.AddSingleton<RandomBeerDialog>();
             services.AddTransient<IBot, Bots.BeerBot>();
 
             services.AddSingleton<IBeerApi, BeerApi>(sp =>
