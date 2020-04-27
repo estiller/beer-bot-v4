@@ -23,7 +23,7 @@ namespace BeerBot
 
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddControllers();
+            services.AddControllers().AddNewtonsoftJson();
             services.AddSingleton<IBotFrameworkHttpAdapter, AdapterWithErrorHandler>();
             services.AddSingleton<IStorage, MemoryStorage>();
             services.AddSingleton<ConversationState>();
