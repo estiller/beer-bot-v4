@@ -4,6 +4,7 @@ using BeerBot.Dialogs;
 using BeerBot.Dialogs.BeerOrdering;
 using BeerBot.Dialogs.BeerRecommendation;
 using BeerBot.Hosting;
+using BeerBot.Services.ImageSearch;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Bot.Builder;
@@ -46,6 +47,11 @@ namespace BeerBot
                 var beerApiUrl = new Uri(_configuration.GetSection("BeerApiUrl").Value);
                 return new BeerApi(beerApiUrl);
             });
+
+            services.AddOptions<CognitiveServicesImageSearchOptions>()
+                .Bind(_configuration.GetSection("ImageSearch"))
+                .ValidateDataAnnotations();
+            services.AddTransient<IImageSearch, CognitiveServicesImageSearch>();
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)

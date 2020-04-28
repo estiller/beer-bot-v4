@@ -4,6 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using BeerBot.BeerApiClient.Models;
 using BeerBot.Emojis;
+using BeerBot.Services.ImageSearch;
 using BeerBot.Utils;
 using Microsoft.Bot.Builder;
 using Microsoft.Bot.Builder.Dialogs;
@@ -22,9 +23,14 @@ namespace BeerBot.Dialogs.BeerRecommendation
             (new Choice("By origin") {Synonyms = new List<string> {"origin", "country"}}, nameof(RecommendBeerByOriginDialog)),
             (new Choice("By name") {Synonyms = new List<string> {"name"}}, nameof(RecommendBeerByNameDialog)));
 
-        public RecommendBeerDialog(RecommendBeerByCategoryDialog byCategory, RecommendBeerByOriginDialog byOrigin, RecommendBeerByNameDialog byName) 
+        private readonly IImageSearch _imageSearch;
+
+        public RecommendBeerDialog(RecommendBeerByCategoryDialog byCategory, RecommendBeerByOriginDialog byOrigin, RecommendBeerByNameDialog byName,
+            IImageSearch imageSearch) 
             : base(nameof(RecommendBeerDialog))
         {
+            _imageSearch = imageSearch;
+
             AddDialog(new ChoicePrompt(nameof(ChoicePrompt)));
             AddDialog(new ConfirmPrompt(nameof(ConfirmPrompt)));
 
@@ -75,13 +81,7 @@ namespace BeerBot.Dialogs.BeerRecommendation
                         InputHints.IgnoringInput, cancellationToken);
                     return await stepContext.EndDialogAsync(null, cancellationToken);
                 case 1:
-                    string oneItemFoundMessage = $"Eureka! This is the beer for you: '{beers[0].Name}'";
-                    await stepContext.Context.SendActivityAsync(oneItemFoundMessage, oneItemFoundMessage, InputHints.IgnoringInput, cancellationToken);
-
-                    const string oneItemHappyMessageBase = "Glad I could help";
-                    await stepContext.Context.SendActivityAsync($"{oneItemHappyMessageBase} {Emoji.Beer}", oneItemHappyMessageBase,
-                        InputHints.IgnoringInput, cancellationToken);
-
+                    await SendBeerCardAsync(beers[0].Name, stepContext.Context, cancellationToken);
                     return await stepContext.EndDialogAsync(beers[0], cancellationToken);
                 default:
                 {
@@ -126,9 +126,7 @@ namespace BeerBot.Dialogs.BeerRecommendation
                 var beers = (IList<Beer>) stepContext.Values[BeersKey];
                 var chosenIndex = (int) stepContext.Values[ChosenBeerIndexKey];
 
-                const string baseHappyMessage = "Glad I could help";
-                await stepContext.Context.SendActivityAsync($"{baseHappyMessage} {Emoji.Beer}", baseHappyMessage, 
-                    InputHints.IgnoringInput, cancellationToken);
+                await SendBeerCardAsync(beers[chosenIndex].Name, stepContext.Context, cancellationToken);
                 return await stepContext.EndDialogAsync(beers[chosenIndex], cancellationToken);
             }
 
@@ -136,6 +134,23 @@ namespace BeerBot.Dialogs.BeerRecommendation
             await stepContext.Context.SendActivityAsync($"{baseSadMessage} {Emoji.Disappointed}", baseSadMessage, 
                 InputHints.IgnoringInput, cancellationToken);
             return await stepContext.EndDialogAsync(null, cancellationToken);
+        }
+
+        private async Task SendBeerCardAsync(string beerName, ITurnContext turnContext, CancellationToken cancellationToken)
+        {
+            var imageUrl = await _imageSearch.SearchImage($"{beerName} beer");
+            const string title = "Your Beer";
+            var activity = MessageFactory.Attachment(
+                new HeroCard(
+                        title,
+                        beerName,
+                        images: new[] {new CardImage(imageUrl.ToString())}
+                    )
+                    .ToAttachment(), null, title, InputHints.IgnoringInput);
+            await turnContext.SendActivityAsync(activity, cancellationToken);
+
+            const string messageBase = "Glad I could help";
+            await turnContext.SendActivityAsync($"{messageBase} {Emoji.Beer}", messageBase, InputHints.IgnoringInput, cancellationToken);
         }
     }
 }
