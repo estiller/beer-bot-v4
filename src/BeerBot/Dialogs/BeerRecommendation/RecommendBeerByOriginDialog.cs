@@ -69,8 +69,8 @@ namespace BeerBot.Dialogs.BeerRecommendation
             const string retryPromptMessage = "I probably drank too much. Which brewery was it?";
             var prompt = new PromptOptions
             {
-                Prompt = MessageFactory.Text(promptMessage, promptMessage, InputHints.AcceptingInput), 
-                RetryPrompt = MessageFactory.Text(retryPromptMessage, retryPromptMessage, InputHints.AcceptingInput),
+                Prompt = MessageFactory.Text(promptMessage, promptMessage, InputHints.ExpectingInput), 
+                RetryPrompt = MessageFactory.Text(retryPromptMessage, retryPromptMessage, InputHints.ExpectingInput),
                 Choices = ChoiceFactory.ToChoices(breweries.Select(brewery => brewery.Name).ToList()),
             };
             return await stepContext.PromptAsync(nameof(ChoicePrompt), prompt, cancellationToken);

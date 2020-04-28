@@ -30,15 +30,15 @@ namespace BeerBot
             services.AddSingleton<IStorage, MemoryStorage>();
             services.AddSingleton<ConversationState>();
 
-            services.AddTransient<MainDialog>();
-            services.AddTransient<RandomBeerDialog>();
-            services.AddTransient<RecommendBeerDialog>();
-            services.AddTransient<RecommendBeerByCategoryDialog>();
-            services.AddTransient<RecommendBeerByOriginDialog>();
-            services.AddTransient<RecommendBeerByNameDialog>();
-            services.AddTransient<SearchBeerForOrderDialog>();
-            services.AddTransient<RecommendationConversionDialog>();
-            services.AddTransient<OrderBeerDialog>();
+            services.AddSingleton<MainDialog>();
+            services.AddSingleton<RandomBeerDialog>();
+            services.AddSingleton<RecommendBeerDialog>();
+            services.AddSingleton<RecommendBeerByCategoryDialog>();
+            services.AddSingleton<RecommendBeerByOriginDialog>();
+            services.AddSingleton<RecommendBeerByNameDialog>();
+            services.AddSingleton<SearchBeerForOrderDialog>();
+            services.AddSingleton<RecommendationConversionDialog>();
+            services.AddSingleton<OrderBeerDialog>();
             services.AddTransient<IBot, Bots.BeerBot>();
 
             services.AddSingleton<IBeerApi, BeerApi>(sp =>

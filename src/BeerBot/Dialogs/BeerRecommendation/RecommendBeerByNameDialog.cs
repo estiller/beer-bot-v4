@@ -28,7 +28,7 @@ namespace BeerBot.Dialogs.BeerRecommendation
         private Task<DialogTurnResult> PromptUser(WaterfallStepContext stepContext, CancellationToken cancellationToken)
         {
             const string message = "Do you remember the name? Give me what you remember";
-            var prompt = new PromptOptions {Prompt = MessageFactory.Text(message, message, InputHints.AcceptingInput)};
+            var prompt = new PromptOptions {Prompt = MessageFactory.Text(message, message, InputHints.ExpectingInput)};
             return stepContext.PromptAsync(nameof(BeerNamePrompt), prompt, cancellationToken);
         }
 
