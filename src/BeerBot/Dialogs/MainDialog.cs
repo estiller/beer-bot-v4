@@ -117,7 +117,7 @@ namespace BeerBot.Dialogs
                 { } when Regex.IsMatch(input, ".*recommend.*", RegexOptions.IgnoreCase) => Intent.RecommendBeer,
                 { } when Regex.IsMatch(input, ".*order.*", RegexOptions.IgnoreCase) => Intent.OrderBeer,
                 { } when Regex.IsMatch(input, "^(bye|exit|adios).*", RegexOptions.IgnoreCase) => Intent.Bye,
-                _ => Intent.Unknown
+                _ => Intent.None
             };
         }
     }
