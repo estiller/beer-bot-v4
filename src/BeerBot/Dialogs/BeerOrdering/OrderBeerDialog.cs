@@ -15,6 +15,7 @@ namespace BeerBot.Dialogs.BeerOrdering
     public class OrderBeerDialog : ComponentDialog
     {
         private const string OrderStateEntry = "beerOrder";
+        private const string IsUsualOrderEntry = "isUsualOrder";
 
         private static readonly List<string> PossibleChasers =
             Enum.GetValues(typeof(Chaser)).Cast<Chaser>().Select(chaser => chaser.ToString()).ToList();
@@ -22,9 +23,13 @@ namespace BeerBot.Dialogs.BeerOrdering
         private static readonly List<string> PossibleSideDishes =
             Enum.GetValues(typeof(SideDish)).Cast<SideDish>().Select(chaser => chaser.ToString()).ToList();
 
-        public OrderBeerDialog(SearchBeerForOrderDialog searchDialog) 
+        private readonly IStatePropertyAccessor<BeerOrder> _lastOrderAccessor;
+
+        public OrderBeerDialog(SearchBeerForOrderDialog searchDialog, UserState userState) 
             : base(nameof(OrderBeerDialog))
         {
+            _lastOrderAccessor = userState.CreateProperty<BeerOrder>("LastOrder");
+
             AddDialog(new ChoicePrompt(nameof(ChoicePrompt)));
             AddDialog(new ConfirmPrompt(nameof(ConfirmPrompt)));
 
@@ -32,6 +37,7 @@ namespace BeerBot.Dialogs.BeerOrdering
 
             AddDialog(new WaterfallDialog(nameof(WaterfallDialog), new WaterfallStep[]
             {
+                CheckUsualOrderStep,
                 BeerSelectionStep,
                 ChaserSelectionStep,
                 SideDishSelectionStep,
@@ -41,12 +47,41 @@ namespace BeerBot.Dialogs.BeerOrdering
             InitialDialogId = nameof(WaterfallDialog);
         }
 
-        private Task<DialogTurnResult> BeerSelectionStep(WaterfallStepContext stepContext, CancellationToken cancellationToken)
+        private async Task<DialogTurnResult> CheckUsualOrderStep(WaterfallStepContext stepContext, CancellationToken cancellationToken)
         {
-            var beerOrder = (BeerOrder) stepContext.Options ?? new BeerOrder();
-            stepContext.Values[OrderStateEntry] = beerOrder;
+            var requestedOrder = (BeerOrder?)stepContext.Options;
+            stepContext.Values[OrderStateEntry] = requestedOrder;
+            if (requestedOrder != null)
+            {
+                return await stepContext.NextAsync(false, cancellationToken);
+            }
 
-            return stepContext.BeginDialogAsync(nameof(SearchBeerForOrderDialog), beerOrder.BeerName, cancellationToken);
+            var lastOrder = await _lastOrderAccessor.GetAsync(stepContext.Context, cancellationToken: cancellationToken);
+            if (lastOrder == null) return await stepContext.NextAsync(false, cancellationToken);
+
+            string message = $"Would you like your usual {lastOrder.BeerName} with {lastOrder.Chaser} and some {lastOrder.Side} on the side?";
+            var prompt = new PromptOptions
+            {
+                Prompt = MessageFactory.Text(message, message, InputHints.ExpectingInput)
+            };
+            return await stepContext.PromptAsync(nameof(ConfirmPrompt), prompt, cancellationToken);
+
+        }
+
+        private async Task<DialogTurnResult> BeerSelectionStep(WaterfallStepContext stepContext, CancellationToken cancellationToken)
+        {
+            var usualOrderRequested = (bool)stepContext.Result;
+            stepContext.Values[IsUsualOrderEntry] = usualOrderRequested;
+            if (usualOrderRequested)
+            {
+                var lastOrder = await _lastOrderAccessor.GetAsync(stepContext.Context, cancellationToken: cancellationToken);
+                stepContext.Values[OrderStateEntry] = lastOrder;
+                return await stepContext.NextAsync(null, cancellationToken);
+            }
+
+            var beerOrder = (BeerOrder) stepContext.Values[OrderStateEntry] ?? new BeerOrder();
+            stepContext.Values[OrderStateEntry] = beerOrder;
+            return await stepContext.BeginDialogAsync(nameof(SearchBeerForOrderDialog), beerOrder.BeerName, cancellationToken);
         }
 
         private Task<DialogTurnResult> ChaserSelectionStep(WaterfallStepContext stepContext, CancellationToken cancellationToken)
@@ -114,6 +149,12 @@ namespace BeerBot.Dialogs.BeerOrdering
                 beerOrder.Side = Enum.Parse<SideDish>(sideDishChoice.Value);
             }
 
+            bool isUsualOrder = (bool) stepContext.Values[IsUsualOrderEntry];
+            if (isUsualOrder)
+            {
+                return stepContext.NextAsync(true, cancellationToken);
+            }
+
             var message = $"Just to make sure, do you want a {beerOrder.BeerName} beer with {beerOrder.Chaser} and some {beerOrder.Side} on the side?";
             var prompt = new PromptOptions {Prompt = MessageFactory.Text(message, message, InputHints.ExpectingInput)};
             return stepContext.PromptAsync(nameof(ConfirmPrompt), prompt, cancellationToken);
@@ -126,6 +167,9 @@ namespace BeerBot.Dialogs.BeerOrdering
             {
                 await stepContext.Context.SendActivityAsync($"Cheers {Emoji.Beers}", "Cheers", 
                     InputHints.IgnoringInput, cancellationToken);
+
+                var beerOrder = (BeerOrder)stepContext.Values[OrderStateEntry];
+                await _lastOrderAccessor.SetAsync(stepContext.Context, beerOrder, cancellationToken);
             }
             else
             {

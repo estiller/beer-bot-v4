@@ -13,12 +13,14 @@ namespace BeerBot.Bots
     {
         private readonly MainDialog _dialog;
         private readonly ConversationState _conversationState;
+        private readonly UserState _userState;
         private readonly ILogger _logger;
 
-        public BeerBot(MainDialog dialog, ConversationState conversationState, ILogger<BeerBot> logger)
+        public BeerBot(MainDialog dialog, ConversationState conversationState, UserState userState, ILogger<BeerBot> logger)
         {
             _dialog = dialog;
             _conversationState = conversationState;
+            _userState = userState;
             _logger = logger;
         }
 
@@ -28,6 +30,7 @@ namespace BeerBot.Bots
 
             // Save any state changes that might have occurred during the turn.
             await _conversationState.SaveChangesAsync(turnContext, false, cancellationToken);
+            await _userState.SaveChangesAsync(turnContext, false, cancellationToken);
         }
 
         protected override Task OnMessageActivityAsync(ITurnContext<IMessageActivity> turnContext, CancellationToken cancellationToken)

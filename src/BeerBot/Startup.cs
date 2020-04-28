@@ -30,6 +30,7 @@ namespace BeerBot
             services.AddSingleton<IBotFrameworkHttpAdapter, BeerBotHttpAdapter>();
             services.AddSingleton<IStorage, MemoryStorage>();
             services.AddSingleton<ConversationState>();
+            services.AddSingleton<UserState>();
 
             services.AddSingleton<MainDialog>();
             services.AddSingleton<RandomBeerDialog>();
