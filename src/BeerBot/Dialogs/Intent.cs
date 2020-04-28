@@ -6,6 +6,7 @@
         Greet,
         GetHelp,
         RandomBeer,
+        RecommendBeer,
         Bye
     }
 }

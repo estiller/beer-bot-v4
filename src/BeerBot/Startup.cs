@@ -1,6 +1,7 @@
 ﻿using System;
 using BeerBot.BeerApiClient;
 using BeerBot.Dialogs;
+using BeerBot.Dialogs.BeerRecommendation;
 using BeerBot.Hosting;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -28,8 +29,12 @@ namespace BeerBot
             services.AddSingleton<IStorage, MemoryStorage>();
             services.AddSingleton<ConversationState>();
 
-            services.AddSingleton<MainDialog>();
-            services.AddSingleton<RandomBeerDialog>();
+            services.AddTransient<MainDialog>();
+            services.AddTransient<RandomBeerDialog>();
+            services.AddTransient<RecommendBeerDialog>();
+            services.AddTransient<RecommendBeerByCategoryDialog>();
+            services.AddTransient<RecommendBeerByOriginDialog>();
+            services.AddTransient<RecommendBeerByNameDialog>();
             services.AddTransient<IBot, Bots.BeerBot>();
 
             services.AddSingleton<IBeerApi, BeerApi>(sp =>
