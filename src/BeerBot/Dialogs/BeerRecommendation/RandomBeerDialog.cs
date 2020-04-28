@@ -6,7 +6,7 @@ using BeerBot.Emojis;
 using Microsoft.Bot.Builder.Dialogs;
 using Microsoft.Bot.Schema;
 
-namespace BeerBot.Dialogs
+namespace BeerBot.Dialogs.BeerRecommendation
 {
     public class RandomBeerDialog : ComponentDialog
     {
