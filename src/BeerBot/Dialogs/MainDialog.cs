@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using BeerBot.Dialogs.BeerOrdering;
 using BeerBot.Dialogs.BeerRecommendation;
 using BeerBot.Emojis;
 using Microsoft.Bot.Builder;
@@ -20,13 +21,15 @@ namespace BeerBot.Dialogs
             (new Choice("Exit") {Synonyms = new List<string> {"bye", "adios"}}, Intent.Bye)
         );
 
-    public MainDialog(RandomBeerDialog randomBeerDialog, RecommendBeerDialog recommendBeerDialog) : base(nameof(MainDialog))
+    public MainDialog(RandomBeerDialog randomBeerDialog, OrderBeerDialog orderBeerDialog, RecommendationConversionDialog recommendationConversionDialog) 
+        : base(nameof(MainDialog))
         {
             AddDialog(new TextPrompt(nameof(TextPrompt)));
             AddDialog(new ChoicePrompt(nameof(ChoicePrompt)));
 
             AddDialog(randomBeerDialog);
-            AddDialog(recommendBeerDialog);
+            AddDialog(orderBeerDialog);
+            AddDialog(recommendationConversionDialog);
 
             AddDialog(new WaterfallDialog(nameof(MainDialog), new WaterfallStep[]
             {
@@ -83,7 +86,10 @@ namespace BeerBot.Dialogs
                     return await stepContext.BeginDialogAsync(nameof(RandomBeerDialog), null, cancellationToken);
 
                 case Intent.RecommendBeer:
-                    return await stepContext.BeginDialogAsync(nameof(RecommendBeerDialog), null, cancellationToken);
+                    return await stepContext.BeginDialogAsync(nameof(RecommendationConversionDialog), null, cancellationToken);
+
+                case Intent.OrderBeer:
+                    return await stepContext.BeginDialogAsync(nameof(OrderBeerDialog), null, cancellationToken);
 
                 case Intent.Bye:
                     const string baseMessage = "So soon? Oh well. See you later!";
@@ -110,6 +116,7 @@ namespace BeerBot.Dialogs
                 { } when Regex.IsMatch(input, ".*menu.*", RegexOptions.IgnoreCase) => Intent.GetHelp,
                 { } when Regex.IsMatch(input, ".*random.*", RegexOptions.IgnoreCase) => Intent.RandomBeer,
                 { } when Regex.IsMatch(input, ".*recommend.*", RegexOptions.IgnoreCase) => Intent.RecommendBeer,
+                { } when Regex.IsMatch(input, ".*order.*", RegexOptions.IgnoreCase) => Intent.OrderBeer,
                 { } when Regex.IsMatch(input, "^(bye|exit|adios).*", RegexOptions.IgnoreCase) => Intent.Bye,
                 _ => Intent.Unknown
             };

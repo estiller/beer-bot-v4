@@ -1,6 +1,7 @@
 ﻿using System;
 using BeerBot.BeerApiClient;
 using BeerBot.Dialogs;
+using BeerBot.Dialogs.BeerOrdering;
 using BeerBot.Dialogs.BeerRecommendation;
 using BeerBot.Hosting;
 using Microsoft.AspNetCore.Builder;
@@ -35,6 +36,9 @@ namespace BeerBot
             services.AddTransient<RecommendBeerByCategoryDialog>();
             services.AddTransient<RecommendBeerByOriginDialog>();
             services.AddTransient<RecommendBeerByNameDialog>();
+            services.AddTransient<SearchBeerForOrderDialog>();
+            services.AddTransient<RecommendationConversionDialog>();
+            services.AddTransient<OrderBeerDialog>();
             services.AddTransient<IBot, Bots.BeerBot>();
 
             services.AddSingleton<IBeerApi, BeerApi>(sp =>

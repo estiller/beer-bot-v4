@@ -7,6 +7,7 @@
         GetHelp,
         RandomBeer,
         RecommendBeer,
+        OrderBeer,
         Bye
     }
 }
