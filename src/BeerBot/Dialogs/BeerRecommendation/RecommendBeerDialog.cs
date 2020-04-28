@@ -138,8 +138,8 @@ namespace BeerBot.Dialogs.BeerRecommendation
 
         private async Task SendBeerCardAsync(string beerName, ITurnContext turnContext, CancellationToken cancellationToken)
         {
-            var typingActivity = Activity.CreateTypingActivity();
-            await turnContext.SendActivityAsync(typingActivity, cancellationToken);
+            //var typingActivity = Activity.CreateTypingActivity();
+            //await turnContext.SendActivityAsync(typingActivity, cancellationToken);
             var minimalDelayTask = Task.Delay(1500, cancellationToken);   // Make it look like we're typing a lot
 
             var imageUrlTask = _imageSearch.SearchImage($"{beerName} beer");

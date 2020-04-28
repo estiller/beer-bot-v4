@@ -1,4 +1,5 @@
-﻿using Microsoft.Bot.Builder.Integration.AspNet.Core;
+﻿using Microsoft.Bot.Builder;
+using Microsoft.Bot.Builder.Integration.AspNet.Core;
 using Microsoft.Bot.Builder.TraceExtensions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -20,6 +21,8 @@ namespace BeerBot.Hosting
                 // ReSharper disable once ExplicitCallerInfoArgument
                 await turnContext.TraceActivityAsync("OnTurnError Trace", exception.Message, "https://www.botframework.com/schemas/error", "TurnError");
             };
+
+            Use(new ShowTypingMiddleware());
         }
     }
 }
