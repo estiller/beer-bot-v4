@@ -5,9 +5,9 @@ using Microsoft.Extensions.Logging;
 
 namespace BeerBot.Hosting
 {
-    internal class AdapterWithErrorHandler : BotFrameworkHttpAdapter
+    internal class BeerBotHttpAdapter : BotFrameworkHttpAdapter
     {
-        public AdapterWithErrorHandler(IConfiguration configuration, ILogger<BotFrameworkHttpAdapter> logger)
+        public BeerBotHttpAdapter(IConfiguration configuration, ILogger<BotFrameworkHttpAdapter> logger)
             : base(configuration, logger)
         {
             OnTurnError = async (turnContext, exception) =>
