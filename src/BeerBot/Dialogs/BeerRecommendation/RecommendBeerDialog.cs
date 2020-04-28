@@ -138,13 +138,19 @@ namespace BeerBot.Dialogs.BeerRecommendation
 
         private async Task SendBeerCardAsync(string beerName, ITurnContext turnContext, CancellationToken cancellationToken)
         {
-            var imageUrl = await _imageSearch.SearchImage($"{beerName} beer");
+            var typingActivity = Activity.CreateTypingActivity();
+            await turnContext.SendActivityAsync(typingActivity, cancellationToken);
+            var minimalDelayTask = Task.Delay(1500, cancellationToken);   // Make it look like we're typing a lot
+
+            var imageUrlTask = _imageSearch.SearchImage($"{beerName} beer");
+            await Task.WhenAll(minimalDelayTask, imageUrlTask);
+
             const string title = "Your Beer";
             var activity = MessageFactory.Attachment(
                 new HeroCard(
                         title,
                         beerName,
-                        images: new[] {new CardImage(imageUrl.ToString())}
+                        images: new[] {new CardImage(imageUrlTask.Result.ToString())}
                     )
                     .ToAttachment(), null, title, InputHints.IgnoringInput);
             await turnContext.SendActivityAsync(activity, cancellationToken);
