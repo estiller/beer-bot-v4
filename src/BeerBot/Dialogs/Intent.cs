@@ -2,7 +2,7 @@
 {
     public enum Intent
     {
-        Unknown = 0,
+        None = 0,
         Greet,
         GetHelp,
         RandomBeer,
