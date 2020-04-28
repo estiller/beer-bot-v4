@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using BeerBot.Dialogs.BeerOrdering;
@@ -21,9 +20,14 @@ namespace BeerBot.Dialogs
             (new Choice("Exit") {Synonyms = new List<string> {"bye", "adios"}}, Intent.Bye)
         );
 
-    public MainDialog(RandomBeerDialog randomBeerDialog, OrderBeerDialog orderBeerDialog, RecommendationConversionDialog recommendationConversionDialog) 
+    private readonly IRecognizer _luisRecognizer;
+
+    public MainDialog(RandomBeerDialog randomBeerDialog, OrderBeerDialog orderBeerDialog, RecommendationConversionDialog recommendationConversionDialog,
+        IRecognizer luisRecognizer) 
         : base(nameof(MainDialog))
         {
+            _luisRecognizer = luisRecognizer;
+
             AddDialog(new TextPrompt(nameof(TextPrompt)));
             AddDialog(new ChoicePrompt(nameof(ChoicePrompt)));
 
@@ -49,17 +53,17 @@ namespace BeerBot.Dialogs
             return stepContext.PromptAsync(nameof(TextPrompt), new PromptOptions { Prompt = promptMessage }, cancellationToken);
         }
 
-        private Task<DialogTurnResult> ShowMenuAsync(WaterfallStepContext stepContext, CancellationToken cancellationToken)
+        private async Task<DialogTurnResult> ShowMenuAsync(WaterfallStepContext stepContext, CancellationToken cancellationToken)
         {
-            Intent intent = GetIntent((string) stepContext.Result);
+            Intent intent = await GetIntentAsync(stepContext.Context, cancellationToken);
             if (intent != Intent.GetHelp)
             {
-                return stepContext.NextAsync(intent, cancellationToken);
+                return await stepContext.NextAsync(intent, cancellationToken);
             }
 
             const string message = "You can choose from one of the following options";
             var prompt = MessageFactory.Text(message, message, InputHints.ExpectingInput);
-            return stepContext.PromptAsync(nameof(ChoicePrompt), new PromptOptions {Choices = MainMenu.Choices, Prompt = prompt}, cancellationToken);
+            return await stepContext.PromptAsync(nameof(ChoicePrompt), new PromptOptions {Choices = MainMenu.Choices, Prompt = prompt}, cancellationToken);
         }
 
         private async Task<DialogTurnResult> ActStepAsync(WaterfallStepContext stepContext, CancellationToken cancellationToken)
@@ -106,17 +110,17 @@ namespace BeerBot.Dialogs
             return await stepContext.ReplaceDialogAsync(InitialDialogId, promptMessage, cancellationToken);
         }
 
-        private Intent GetIntent(string input)
+        private async Task<Intent> GetIntentAsync(ITurnContext turnContext, CancellationToken cancellationToken)
         {
-            return input switch
+            RecognizerResult result = await _luisRecognizer.RecognizeAsync(turnContext, cancellationToken);
+            return result.GetTopScoringIntent().intent switch
             {
-                { } when Regex.IsMatch(input, "^(hi|hello|hola).*", RegexOptions.IgnoreCase) => Intent.Greet,
-                { } when Regex.IsMatch(input, ".*help.*", RegexOptions.IgnoreCase) => Intent.GetHelp,
-                { } when Regex.IsMatch(input, ".*menu.*", RegexOptions.IgnoreCase) => Intent.GetHelp,
-                { } when Regex.IsMatch(input, ".*random.*", RegexOptions.IgnoreCase) => Intent.RandomBeer,
-                { } when Regex.IsMatch(input, ".*recommend.*", RegexOptions.IgnoreCase) => Intent.RecommendBeer,
-                { } when Regex.IsMatch(input, ".*order.*", RegexOptions.IgnoreCase) => Intent.OrderBeer,
-                { } when Regex.IsMatch(input, "^(bye|exit|adios).*", RegexOptions.IgnoreCase) => Intent.Bye,
+                "Greet" => Intent.Greet,
+                "GetHelp" => Intent.GetHelp,
+                "RandomBeer" => Intent.RandomBeer,
+                "RecommendBeer" => Intent.RecommendBeer,
+                "OrderBeer" => Intent.OrderBeer,
+                "Bye" => Intent.Bye,
                 _ => Intent.None
             };
         }

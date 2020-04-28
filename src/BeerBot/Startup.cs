@@ -4,6 +4,7 @@ using BeerBot.Dialogs;
 using BeerBot.Dialogs.BeerOrdering;
 using BeerBot.Dialogs.BeerRecommendation;
 using BeerBot.Hosting;
+using BeerBot.Luis;
 using BeerBot.Services.ImageSearch;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -31,6 +32,11 @@ namespace BeerBot
             services.AddSingleton<IStorage, MemoryStorage>();
             services.AddSingleton<ConversationState>();
             services.AddSingleton<UserState>();
+
+            services.AddOptions<RecognizerOptions>()
+                .Bind(_configuration.GetSection("LuisRecognizer"))
+                .ValidateDataAnnotations();
+            services.AddSingleton<IRecognizer, BeerBotIntentRecognizer>();
 
             services.AddSingleton<MainDialog>();
             services.AddSingleton<RandomBeerDialog>();
