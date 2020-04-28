@@ -29,8 +29,8 @@ namespace BeerBot
             services.AddSingleton<IStorage, MemoryStorage>();
             services.AddSingleton<ConversationState>();
 
-            services.AddTransient<MainDialog>();
-            services.AddTransient<RandomBeerDialog>();
+            services.AddSingleton<MainDialog>();
+            services.AddSingleton<RandomBeerDialog>();
             services.AddTransient<IBot, Bots.BeerBot>();
 
             services.AddSingleton<IBeerApi, BeerApi>(sp =>

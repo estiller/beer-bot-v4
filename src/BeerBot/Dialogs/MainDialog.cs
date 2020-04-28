@@ -39,7 +39,6 @@ namespace BeerBot.Dialogs
 
         private Task<DialogTurnResult> IntroStepAsync(WaterfallStepContext stepContext, CancellationToken cancellationToken)
         {
-            // Use the text provided, or the default if it is the first time
             var message = stepContext.Options?.ToString() ?? "Welcome to your friendly neighborhood bot-tender! How can I help?";
             var promptMessage = MessageFactory.Text(message, message, InputHints.ExpectingInput);
             return stepContext.PromptAsync(nameof(TextPrompt), new PromptOptions { Prompt = promptMessage }, cancellationToken);
@@ -54,7 +53,7 @@ namespace BeerBot.Dialogs
             }
 
             const string message = "You can choose from one of the following options";
-            var prompt = MessageFactory.Text(message, message, InputHints.AcceptingInput);
+            var prompt = MessageFactory.Text(message, message, InputHints.ExpectingInput);
             return stepContext.PromptAsync(nameof(ChoicePrompt), new PromptOptions {Choices = MainMenu.Choices, Prompt = prompt}, cancellationToken);
         }
 
