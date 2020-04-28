@@ -35,19 +35,5 @@ namespace BeerBot.Bots
             _logger.LogInformation("Running dialog with Message Activity.");
             return _dialog.RunAsync(turnContext, _conversationState.CreateProperty<DialogState>(nameof(DialogState)), cancellationToken);
         }
-
-        protected override async Task OnMembersAddedAsync(IList<ChannelAccount> membersAdded, ITurnContext<IConversationUpdateActivity> turnContext,
-            CancellationToken cancellationToken)
-        {
-            foreach (var member in membersAdded)
-            {
-                if (member.Id != turnContext.Activity.Recipient.Id)
-                {
-                    string message = $"Howdy {member.Name ?? "Stranger"}!";
-                    await turnContext.SendActivityAsync(message, message, InputHints.IgnoringInput, cancellationToken);
-                    await _dialog.RunAsync(turnContext, _conversationState.CreateProperty<DialogState>(nameof(DialogState)), cancellationToken);
-                }
-            }
-        }
     }
 }
