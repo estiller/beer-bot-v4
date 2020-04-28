@@ -19,6 +19,7 @@ namespace BeerBot.Dialogs
         private static readonly DialogMenu<BeerBotLuisModel.Intent> MainMenu = DialogMenu<BeerBotLuisModel.Intent>.Create(
             (new Choice("Get a random beer") {Synonyms = new List<string> {"random", "random beer"}}, BeerBotLuisModel.Intent.RandomBeer),
             (new Choice("Recommend a beer") { Synonyms = new List<string> { "recommend", "recommend beer" }}, BeerBotLuisModel.Intent.RecommendBeer),
+            (new Choice("Order a beer") { Synonyms = new List<string> { "order", "order beer" } }, BeerBotLuisModel.Intent.OrderBeer),
             (new Choice("Exit") {Synonyms = new List<string> {"bye", "adios"}}, BeerBotLuisModel.Intent.Bye)
         );
 
