@@ -1,6 +1,7 @@
 ﻿using System;
 using BeerBot.BeerApiClient;
 using BeerBot.Dialogs;
+using BeerBot.Dialogs.BeerRecommendation;
 using BeerBot.Hosting;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;

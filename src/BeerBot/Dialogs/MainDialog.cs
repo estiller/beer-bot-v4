@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using BeerBot.Dialogs.BeerRecommendation;
 using BeerBot.Emojis;
 using Microsoft.Bot.Builder;
 using Microsoft.Bot.Builder.Dialogs;
