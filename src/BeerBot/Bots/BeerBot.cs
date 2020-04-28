@@ -43,7 +43,9 @@ namespace BeerBot.Bots
             {
                 if (member.Id != turnContext.Activity.Recipient.Id)
                 {
-                    await turnContext.SendActivityAsync($"Howdy {member.Name ?? "Stranger"}!", cancellationToken: cancellationToken);
+                    string message = $"Howdy {member.Name ?? "Stranger"}!";
+                    await turnContext.SendActivityAsync(message, message, InputHints.IgnoringInput, cancellationToken);
+                    await _dialog.RunAsync(turnContext, _conversationState.CreateProperty<DialogState>(nameof(DialogState)), cancellationToken);
                 }
             }
         }

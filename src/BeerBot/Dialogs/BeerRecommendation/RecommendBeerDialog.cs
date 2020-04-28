@@ -49,8 +49,8 @@ namespace BeerBot.Dialogs.BeerRecommendation
             const string retryPromptMessage = "Not sure I got it. Could you try again?";
             var prompt = new PromptOptions
             {
-                Prompt = MessageFactory.Text(promptMessage, promptMessage, InputHints.AcceptingInput),
-                RetryPrompt = MessageFactory.Text(retryPromptMessage, retryPromptMessage, InputHints.AcceptingInput), 
+                Prompt = MessageFactory.Text(promptMessage, promptMessage, InputHints.ExpectingInput),
+                RetryPrompt = MessageFactory.Text(retryPromptMessage, retryPromptMessage, InputHints.ExpectingInput), 
                 Choices = RecommendationMenu.Choices,
             };
             return stepContext.PromptAsync(nameof(ChoicePrompt), prompt, cancellationToken);
@@ -92,8 +92,8 @@ namespace BeerBot.Dialogs.BeerRecommendation
                     const string retryPromptMessage = "I probably drank too much. Which one of these work?";
                     var prompt = new PromptOptions
                     {
-                        Prompt = MessageFactory.Text(promptMessage, promptMessage, InputHints.AcceptingInput),
-                        RetryPrompt = MessageFactory.Text(retryPromptMessage, retryPromptMessage, InputHints.AcceptingInput), 
+                        Prompt = MessageFactory.Text(promptMessage, promptMessage, InputHints.ExpectingInput),
+                        RetryPrompt = MessageFactory.Text(retryPromptMessage, retryPromptMessage, InputHints.ExpectingInput), 
                         Choices = ChoiceFactory.ToChoices(beers.Select(beer => beer.Name).ToList()),
                     };
                     return await stepContext.PromptAsync(nameof(ChoicePrompt), prompt, cancellationToken);
@@ -113,7 +113,7 @@ namespace BeerBot.Dialogs.BeerRecommendation
             string message = $"Just making sure I got it right. Do you want a '{choice.Value}'?";
             var prompt = new PromptOptions
             {
-                Prompt = MessageFactory.Text(message, message, InputHints.AcceptingInput)
+                Prompt = MessageFactory.Text(message, message, InputHints.ExpectingInput)
             };
             return stepContext.PromptAsync(nameof(ConfirmPrompt), prompt, cancellationToken);
         }
