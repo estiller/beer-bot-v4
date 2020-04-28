@@ -39,24 +39,7 @@
     }
   ],
   "hierarchicals": [],
-  "composites": [
-    {
-      "name": "beerorder",
-      "children": [
-        {
-          "name": "beername"
-        },
-        {
-          "name": "chaser"
-        },
-        {
-          "name": "sidedish"
-        }
-      ],
-      "roles": [],
-      "features": []
-    }
-  ],
+  "composites": [],
   "closedLists": [
     {
       "name": "chaser",
@@ -150,11 +133,6 @@
           "entity": "beername",
           "startPos": 10,
           "endPos": 18
-        },
-        {
-          "entity": "beerorder",
-          "startPos": 10,
-          "endPos": 39
         }
       ]
     },
@@ -166,13 +144,7 @@
     {
       "text": "give me some beer with fries and water",
       "intent": "OrderBeer",
-      "entities": [
-        {
-          "entity": "beerorder",
-          "startPos": 23,
-          "endPos": 37
-        }
-      ]
+      "entities": []
     },
     {
       "text": "goodbye",
@@ -232,11 +204,6 @@
           "entity": "beername",
           "startPos": 9,
           "endPos": 17
-        },
-        {
-          "entity": "beerorder",
-          "startPos": 9,
-          "endPos": 27
         }
       ]
     },
@@ -246,11 +213,6 @@
       "entities": [
         {
           "entity": "beername",
-          "startPos": 9,
-          "endPos": 16
-        },
-        {
-          "entity": "beerorder",
           "startPos": 9,
           "endPos": 16
         }
@@ -264,11 +226,6 @@
           "entity": "beername",
           "startPos": 9,
           "endPos": 16
-        },
-        {
-          "entity": "beerorder",
-          "startPos": 9,
-          "endPos": 34
         }
       ]
     },
@@ -280,11 +237,6 @@
           "entity": "beername",
           "startPos": 9,
           "endPos": 16
-        },
-        {
-          "entity": "beerorder",
-          "startPos": 9,
-          "endPos": 27
         }
       ]
     },
@@ -296,11 +248,6 @@
           "entity": "beername",
           "startPos": 9,
           "endPos": 16
-        },
-        {
-          "entity": "beerorder",
-          "startPos": 9,
-          "endPos": 27
         }
       ]
     },
@@ -317,35 +264,18 @@
           "entity": "beername",
           "startPos": 9,
           "endPos": 14
-        },
-        {
-          "entity": "beerorder",
-          "startPos": 9,
-          "endPos": 25
         }
       ]
     },
     {
       "text": "i want an american beer please with fries and vodka",
       "intent": "OrderBeer",
-      "entities": [
-        {
-          "entity": "beerorder",
-          "startPos": 36,
-          "endPos": 50
-        }
-      ]
+      "entities": []
     },
     {
       "text": "i would like a beer with vodka and pretzels",
       "intent": "OrderBeer",
-      "entities": [
-        {
-          "entity": "beerorder",
-          "startPos": 25,
-          "endPos": 42
-        }
-      ]
+      "entities": []
     },
     {
       "text": "i would like a heineken with fries",
@@ -355,11 +285,6 @@
           "entity": "beername",
           "startPos": 15,
           "endPos": 22
-        },
-        {
-          "entity": "beerorder",
-          "startPos": 15,
-          "endPos": 33
         }
       ]
     },
@@ -371,24 +296,13 @@
           "entity": "beername",
           "startPos": 15,
           "endPos": 20
-        },
-        {
-          "entity": "beerorder",
-          "startPos": 15,
-          "endPos": 41
         }
       ]
     },
     {
       "text": "i would like to order beer with chips",
       "intent": "OrderBeer",
-      "entities": [
-        {
-          "entity": "beerorder",
-          "startPos": 32,
-          "endPos": 36
-        }
-      ]
+      "entities": []
     },
     {
       "text": "i'd like a heineken with some vodka",
@@ -398,11 +312,6 @@
           "entity": "beername",
           "startPos": 11,
           "endPos": 18
-        },
-        {
-          "entity": "beerorder",
-          "startPos": 11,
-          "endPos": 34
         }
       ]
     },
@@ -414,11 +323,6 @@
           "entity": "beername",
           "startPos": 12,
           "endPos": 20
-        },
-        {
-          "entity": "beerorder",
-          "startPos": 12,
-          "endPos": 51
         }
       ]
     },
@@ -440,11 +344,6 @@
           "entity": "beername",
           "startPos": 20,
           "endPos": 25
-        },
-        {
-          "entity": "beerorder",
-          "startPos": 20,
-          "endPos": 36
         }
       ]
     },
@@ -476,11 +375,6 @@
           "entity": "beername",
           "startPos": 8,
           "endPos": 15
-        },
-        {
-          "entity": "beerorder",
-          "startPos": 8,
-          "endPos": 26
         }
       ]
     },
@@ -492,11 +386,6 @@
           "entity": "beername",
           "startPos": 8,
           "endPos": 15
-        },
-        {
-          "entity": "beerorder",
-          "startPos": 8,
-          "endPos": 26
         }
       ]
     },
