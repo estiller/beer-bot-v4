@@ -1,15 +1,15 @@
-﻿namespace BeerBot
+﻿namespace BeerBot.Dialogs.BeerOrdering
 {
     public class BeerOrder
     {
-        public string BeerName { get; set; }
-        public Chaser Chaser { get; set; }
-        public SideDish Side { get; set; }
+        public string? BeerName { get; set; }
+        public Chaser? Chaser { get; set; }
+        public SideDish? Side { get; set; }
     }
 
     public enum Chaser
     {
-        Whiskey = 1,
+        Whiskey,
         Vodka,
         Liquor,
         Water

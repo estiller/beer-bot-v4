@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace BeerBot
+namespace BeerBot.Utils
 {
-    public static class EnumerableExtensions
+    public static class RandomEnumerableExtensions
     {
+        private static readonly Random RandomGenerator = new Random();
+
         public static List<T> Random<T>(this IList<T> source, int numOfItems)
         {
             numOfItems = Math.Min(numOfItems, source.Count);
@@ -29,8 +31,6 @@ namespace BeerBot
             selectedItems.Add(random);
             return random;
         }
-
-        private static readonly Random RandomGenerator = new Random();
 
         private static int GetRandomNumber(int maxValue)
         {

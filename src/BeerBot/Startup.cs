@@ -1,126 +1,84 @@
 ﻿using System;
-using System.Linq;
 using BeerBot.BeerApiClient;
-using BeerBot.Services;
+using BeerBot.Dialogs;
+using BeerBot.Dialogs.BeerOrdering;
+using BeerBot.Dialogs.BeerRecommendation;
+using BeerBot.Hosting;
+using BeerBot.Luis;
+using BeerBot.Services.ImageSearch;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Bot.Builder;
-using Microsoft.Bot.Builder.AI.Luis;
-using Microsoft.Bot.Builder.Dialogs;
-using Microsoft.Bot.Builder.Integration;
 using Microsoft.Bot.Builder.Integration.AspNet.Core;
-using Microsoft.Bot.Builder.TraceExtensions;
-using Microsoft.Bot.Configuration;
-using Microsoft.Bot.Connector.Authentication;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Hosting;
 
 namespace BeerBot
 {
     public class Startup
     {
-        private readonly IHostingEnvironment _hostingEnvironment;
+        private readonly IConfiguration _configuration;
 
-        public Startup(IHostingEnvironment env)
+        public Startup(IConfiguration configuration)
         {
-            _hostingEnvironment = env;
-
-            var builder = new ConfigurationBuilder()
-                .SetBasePath(env.ContentRootPath)
-                .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
-                .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true)
-                .AddEnvironmentVariables();
-
-            if (env.IsDevelopment())
-            {
-                builder.AddUserSecrets<Startup>();
-            }
-
-            Configuration = builder.Build();
-
-            var secretKey = Configuration.GetSection("botFileSecret")?.Value;
-            var botFilePath = Configuration.GetSection("botFilePath")?.Value;
-            BotConfiguration = BotConfiguration.Load(botFilePath ?? @".\BeerBot.bot", secretKey) ??
-                               throw new InvalidOperationException($"The .bot config file could not be loaded. ({botFilePath})");
+            _configuration = configuration;
         }
-
-        public IConfiguration Configuration { get; }
-
-        public BotConfiguration BotConfiguration { get; }
 
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddBot<BeerBot>(options =>
-            {
-                var endpointService = (EndpointService) BotConfiguration.Services.First(s => s.Type == "endpoint" && s.Name == _hostingEnvironment.EnvironmentName);
+            services.AddControllers().AddNewtonsoftJson();
+            services.AddSingleton<IBotFrameworkHttpAdapter, BeerBotHttpAdapter>();
+            services.AddSingleton<IStorage, MemoryStorage>();
+            services.AddSingleton<ConversationState>();
+            services.AddSingleton<UserState>();
 
-                options.CredentialProvider = new SimpleCredentialProvider(endpointService.AppId, endpointService.AppPassword);
+            services.AddOptions<RecognizerOptions>()
+                .Bind(_configuration.GetSection("LuisRecognizer"))
+                .ValidateDataAnnotations();
+            services.AddSingleton<IRecognizer, BeerBotIntentRecognizer>();
 
-                options.OnTurnError = async (context, exception) =>
-                {
-                    await context.TraceActivityAsync("BeerBot Exception", exception);
-                    await context.SendActivityAsync("Sorry, it looks like something went wrong!");
-                };
-
-                IStorage dataStore = new MemoryStorage();
-                //IStorage dataStore = new AzureBlobStorage(CONNECTION_STRING, "beerstate");
-                var conversationState = new ConversationState(dataStore);
-                options.State.Add(conversationState);
-                var userState = new UserState(dataStore);
-                options.State.Add(userState);
-                options.Middleware.Add(new AutoSaveStateMiddleware(conversationState, userState));
-
-                options.Middleware.Add(new ShowTypingMiddleware());
-            });
-
-            services.AddSingleton(sp =>
-            {
-                var luisService = (LuisService) BotConfiguration.Services.First(service => service.Name == "BeerModel");
-                var spellCheckService = (GenericService) BotConfiguration.Services.First(service => service.Name == "SpellCheck");
-                var app = new LuisApplication(luisService.AppId, luisService.SubscriptionKey, luisService.GetEndpoint());
-                var predictionOptions = new LuisPredictionOptions
-                {
-                    SpellCheck = true,
-                    BingSpellCheckSubscriptionKey = spellCheckService.Configuration["key"]
-                };
-                return new LuisRecognizer(app, predictionOptions);
-            });
-
-            services.AddSingleton(sp =>
-            {
-                var options = sp.GetRequiredService<IOptions<BotFrameworkOptions>>().Value;
-                var conversationState = options.State.OfType<ConversationState>().First();
-                var userState = options.State.OfType<UserState>().First();
-                return new BeerBotAccessors(conversationState, userState)
-                {
-                    DialogState = conversationState.CreateProperty<DialogState>(BeerBotAccessors.DialogStateName),
-                    UserInfo = conversationState.CreateProperty<UserInfo>(BeerBotAccessors.UserInfoName)
-                };
-            });
+            services.AddSingleton<MainDialog>();
+            services.AddSingleton<RandomBeerDialog>();
+            services.AddSingleton<RecommendBeerDialog>();
+            services.AddSingleton<RecommendBeerByCategoryDialog>();
+            services.AddSingleton<RecommendBeerByOriginDialog>();
+            services.AddSingleton<RecommendBeerByNameDialog>();
+            services.AddSingleton<SearchBeerForOrderDialog>();
+            services.AddSingleton<RecommendationConversionDialog>();
+            services.AddSingleton<OrderBeerDialog>();
+            services.AddTransient<IBot, Bots.BeerBot>();
 
             services.AddSingleton<IBeerApi, BeerApi>(sp =>
             {
-                var beerApiConfig = (GenericService) BotConfiguration.Services.First(service => service.Name == $"BeerApi-{_hostingEnvironment.EnvironmentName}");
-                return new BeerApi(new Uri(beerApiConfig.Url));
+                var beerApiUrl = new Uri(_configuration.GetSection("BeerApiUrl").Value);
+                return new BeerApi(beerApiUrl);
             });
-            services.AddSingleton<IImageSearchService, ImageSearchService>(sp =>
-            {
-                var imageSearchConfig = (GenericService)BotConfiguration.Services.First(service => service.Name == "ImageSearch");
-                return new ImageSearchService(imageSearchConfig.Url, imageSearchConfig.Configuration["key"]);
-            });
+
+            services.AddOptions<CognitiveServicesImageSearchOptions>()
+                .Bind(_configuration.GetSection("ImageSearch"))
+                .ValidateDataAnnotations();
+            services.AddTransient<IImageSearch, CognitiveServicesImageSearch>();
         }
 
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
             }
 
-            app.UseDefaultFiles()
-                .UseStaticFiles()
-                .UseBotFramework();
+            app.UseDefaultFiles();
+            app.UseStaticFiles();
+
+            app.UseAuthorization();
+
+            app.UseWebSockets();
+            app.UseRouting();
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.MapControllers();
+            });
         }
     }
 }

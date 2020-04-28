@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Threading.Tasks;
 
-namespace BeerBot.Services
+namespace BeerBot.Services.ImageSearch
 {
-    public interface IImageSearchService
+    public interface IImageSearch
     {
         Task<Uri> SearchImage(string query);
     }

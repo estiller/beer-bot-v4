@@ -181,7 +181,7 @@ namespace BeerBot.BeerApiClient
         /// <return>
         /// A response object containing the response body and response headers.
         /// </return>
-        public async Task<HttpOperationResponse<IList<Beer>>> BeersGetWithHttpMessagesAsync(IList<string> searchTerm = default(IList<string>), IList<int?> breweryId = default(IList<int?>), IList<int?> categoryId = default(IList<int?>), IList<int?> styleId = default(IList<int?>), double? minAbv = default(double?), double? maxAbv = default(double?), Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken))
+        public async Task<HttpOperationResponse<IList<Beer>>> GetBeersWithHttpMessagesAsync(IList<string> searchTerm = default(IList<string>), IList<int?> breweryId = default(IList<int?>), IList<int?> categoryId = default(IList<int?>), IList<int?> styleId = default(IList<int?>), double? minAbv = default(double?), double? maxAbv = default(double?), Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken))
         {
             // Tracing
             bool _shouldTrace = ServiceClientTracing.IsEnabled;
@@ -197,7 +197,7 @@ namespace BeerBot.BeerApiClient
                 tracingParameters.Add("minAbv", minAbv);
                 tracingParameters.Add("maxAbv", maxAbv);
                 tracingParameters.Add("cancellationToken", cancellationToken);
-                ServiceClientTracing.Enter(_invocationId, this, "BeersGet", tracingParameters);
+                ServiceClientTracing.Enter(_invocationId, this, "GetBeers", tracingParameters);
             }
             // Construct URL
             var _baseUrl = BaseUri.AbsoluteUri;
@@ -205,59 +205,19 @@ namespace BeerBot.BeerApiClient
             List<string> _queryParameters = new List<string>();
             if (searchTerm != null)
             {
-                if (searchTerm.Count == 0)
-                {
-                    _queryParameters.Add(string.Format("searchTerm={0}", System.Uri.EscapeDataString(string.Empty)));
-                }
-                else
-                {
-                    foreach (var _item in searchTerm)
-                    {
-                        _queryParameters.Add(string.Format("searchTerm={0}", System.Uri.EscapeDataString("" + _item)));
-                    }
-                }
+                _queryParameters.Add(string.Format("searchTerm={0}", System.Uri.EscapeDataString(string.Join(",", searchTerm))));
             }
             if (breweryId != null)
             {
-                if (breweryId.Count == 0)
-                {
-                    _queryParameters.Add(string.Format("breweryId={0}", System.Uri.EscapeDataString(string.Empty)));
-                }
-                else
-                {
-                    foreach (var _item in breweryId)
-                    {
-                        _queryParameters.Add(string.Format("breweryId={0}", System.Uri.EscapeDataString("" + _item)));
-                    }
-                }
+                _queryParameters.Add(string.Format("breweryId={0}", System.Uri.EscapeDataString(string.Join(",", breweryId))));
             }
             if (categoryId != null)
             {
-                if (categoryId.Count == 0)
-                {
-                    _queryParameters.Add(string.Format("categoryId={0}", System.Uri.EscapeDataString(string.Empty)));
-                }
-                else
-                {
-                    foreach (var _item in categoryId)
-                    {
-                        _queryParameters.Add(string.Format("categoryId={0}", System.Uri.EscapeDataString("" + _item)));
-                    }
-                }
+                _queryParameters.Add(string.Format("categoryId={0}", System.Uri.EscapeDataString(string.Join(",", categoryId))));
             }
             if (styleId != null)
             {
-                if (styleId.Count == 0)
-                {
-                    _queryParameters.Add(string.Format("styleId={0}", System.Uri.EscapeDataString(string.Empty)));
-                }
-                else
-                {
-                    foreach (var _item in styleId)
-                    {
-                        _queryParameters.Add(string.Format("styleId={0}", System.Uri.EscapeDataString("" + _item)));
-                    }
-                }
+                _queryParameters.Add(string.Format("styleId={0}", System.Uri.EscapeDataString(string.Join(",", styleId))));
             }
             if (minAbv != null)
             {
@@ -373,7 +333,7 @@ namespace BeerBot.BeerApiClient
         /// <return>
         /// A response object containing the response body and response headers.
         /// </return>
-        public async Task<HttpOperationResponse<Beer>> BeersRandomGetWithHttpMessagesAsync(Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken))
+        public async Task<HttpOperationResponse<Beer>> GetRandomBeerWithHttpMessagesAsync(Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken))
         {
             // Tracing
             bool _shouldTrace = ServiceClientTracing.IsEnabled;
@@ -383,7 +343,7 @@ namespace BeerBot.BeerApiClient
                 _invocationId = ServiceClientTracing.NextInvocationId.ToString();
                 Dictionary<string, object> tracingParameters = new Dictionary<string, object>();
                 tracingParameters.Add("cancellationToken", cancellationToken);
-                ServiceClientTracing.Enter(_invocationId, this, "BeersRandomGet", tracingParameters);
+                ServiceClientTracing.Enter(_invocationId, this, "GetRandomBeer", tracingParameters);
             }
             // Construct URL
             var _baseUrl = BaseUri.AbsoluteUri;
@@ -492,7 +452,7 @@ namespace BeerBot.BeerApiClient
         /// <return>
         /// A response object containing the response body and response headers.
         /// </return>
-        public async Task<HttpOperationResponse<Beer>> BeersByIdGetWithHttpMessagesAsync(int id, Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken))
+        public async Task<HttpOperationResponse<Beer>> GetBeerByIdWithHttpMessagesAsync(int id, Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken))
         {
             // Tracing
             bool _shouldTrace = ServiceClientTracing.IsEnabled;
@@ -503,7 +463,7 @@ namespace BeerBot.BeerApiClient
                 Dictionary<string, object> tracingParameters = new Dictionary<string, object>();
                 tracingParameters.Add("id", id);
                 tracingParameters.Add("cancellationToken", cancellationToken);
-                ServiceClientTracing.Enter(_invocationId, this, "BeersByIdGet", tracingParameters);
+                ServiceClientTracing.Enter(_invocationId, this, "GetBeerById", tracingParameters);
             }
             // Construct URL
             var _baseUrl = BaseUri.AbsoluteUri;
@@ -615,7 +575,7 @@ namespace BeerBot.BeerApiClient
         /// <return>
         /// A response object containing the response body and response headers.
         /// </return>
-        public async Task<HttpOperationResponse<IList<Brewery>>> BreweriesGetWithHttpMessagesAsync(IList<string> searchTerm = default(IList<string>), IList<string> country = default(IList<string>), Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken))
+        public async Task<HttpOperationResponse<IList<Brewery>>> GetBreweriesWithHttpMessagesAsync(IList<string> searchTerm = default(IList<string>), IList<string> country = default(IList<string>), Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken))
         {
             // Tracing
             bool _shouldTrace = ServiceClientTracing.IsEnabled;
@@ -627,7 +587,7 @@ namespace BeerBot.BeerApiClient
                 tracingParameters.Add("searchTerm", searchTerm);
                 tracingParameters.Add("country", country);
                 tracingParameters.Add("cancellationToken", cancellationToken);
-                ServiceClientTracing.Enter(_invocationId, this, "BreweriesGet", tracingParameters);
+                ServiceClientTracing.Enter(_invocationId, this, "GetBreweries", tracingParameters);
             }
             // Construct URL
             var _baseUrl = BaseUri.AbsoluteUri;
@@ -635,31 +595,11 @@ namespace BeerBot.BeerApiClient
             List<string> _queryParameters = new List<string>();
             if (searchTerm != null)
             {
-                if (searchTerm.Count == 0)
-                {
-                    _queryParameters.Add(string.Format("searchTerm={0}", System.Uri.EscapeDataString(string.Empty)));
-                }
-                else
-                {
-                    foreach (var _item in searchTerm)
-                    {
-                        _queryParameters.Add(string.Format("searchTerm={0}", System.Uri.EscapeDataString("" + _item)));
-                    }
-                }
+                _queryParameters.Add(string.Format("searchTerm={0}", System.Uri.EscapeDataString(string.Join(",", searchTerm))));
             }
             if (country != null)
             {
-                if (country.Count == 0)
-                {
-                    _queryParameters.Add(string.Format("country={0}", System.Uri.EscapeDataString(string.Empty)));
-                }
-                else
-                {
-                    foreach (var _item in country)
-                    {
-                        _queryParameters.Add(string.Format("country={0}", System.Uri.EscapeDataString("" + _item)));
-                    }
-                }
+                _queryParameters.Add(string.Format("country={0}", System.Uri.EscapeDataString(string.Join(",", country))));
             }
             if (_queryParameters.Count > 0)
             {
@@ -769,7 +709,7 @@ namespace BeerBot.BeerApiClient
         /// <return>
         /// A response object containing the response body and response headers.
         /// </return>
-        public async Task<HttpOperationResponse<Brewery>> BreweriesByIdGetWithHttpMessagesAsync(int id, Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken))
+        public async Task<HttpOperationResponse<Brewery>> GetBreweryByIdWithHttpMessagesAsync(int id, Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken))
         {
             // Tracing
             bool _shouldTrace = ServiceClientTracing.IsEnabled;
@@ -780,7 +720,7 @@ namespace BeerBot.BeerApiClient
                 Dictionary<string, object> tracingParameters = new Dictionary<string, object>();
                 tracingParameters.Add("id", id);
                 tracingParameters.Add("cancellationToken", cancellationToken);
-                ServiceClientTracing.Enter(_invocationId, this, "BreweriesByIdGet", tracingParameters);
+                ServiceClientTracing.Enter(_invocationId, this, "GetBreweryById", tracingParameters);
             }
             // Construct URL
             var _baseUrl = BaseUri.AbsoluteUri;
@@ -888,7 +828,7 @@ namespace BeerBot.BeerApiClient
         /// <return>
         /// A response object containing the response body and response headers.
         /// </return>
-        public async Task<HttpOperationResponse<IList<string>>> BreweriesCountriesGetWithHttpMessagesAsync(Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken))
+        public async Task<HttpOperationResponse<IList<string>>> GetBreweriesCountriesWithHttpMessagesAsync(Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken))
         {
             // Tracing
             bool _shouldTrace = ServiceClientTracing.IsEnabled;
@@ -898,7 +838,7 @@ namespace BeerBot.BeerApiClient
                 _invocationId = ServiceClientTracing.NextInvocationId.ToString();
                 Dictionary<string, object> tracingParameters = new Dictionary<string, object>();
                 tracingParameters.Add("cancellationToken", cancellationToken);
-                ServiceClientTracing.Enter(_invocationId, this, "BreweriesCountriesGet", tracingParameters);
+                ServiceClientTracing.Enter(_invocationId, this, "GetBreweriesCountries", tracingParameters);
             }
             // Construct URL
             var _baseUrl = BaseUri.AbsoluteUri;
@@ -1007,7 +947,7 @@ namespace BeerBot.BeerApiClient
         /// <return>
         /// A response object containing the response body and response headers.
         /// </return>
-        public async Task<HttpOperationResponse<IList<Category>>> CategoriesGetWithHttpMessagesAsync(IList<string> searchTerm = default(IList<string>), Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken))
+        public async Task<HttpOperationResponse<IList<Category>>> GetCategoriesWithHttpMessagesAsync(IList<string> searchTerm = default(IList<string>), Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken))
         {
             // Tracing
             bool _shouldTrace = ServiceClientTracing.IsEnabled;
@@ -1018,7 +958,7 @@ namespace BeerBot.BeerApiClient
                 Dictionary<string, object> tracingParameters = new Dictionary<string, object>();
                 tracingParameters.Add("searchTerm", searchTerm);
                 tracingParameters.Add("cancellationToken", cancellationToken);
-                ServiceClientTracing.Enter(_invocationId, this, "CategoriesGet", tracingParameters);
+                ServiceClientTracing.Enter(_invocationId, this, "GetCategories", tracingParameters);
             }
             // Construct URL
             var _baseUrl = BaseUri.AbsoluteUri;
@@ -1026,17 +966,7 @@ namespace BeerBot.BeerApiClient
             List<string> _queryParameters = new List<string>();
             if (searchTerm != null)
             {
-                if (searchTerm.Count == 0)
-                {
-                    _queryParameters.Add(string.Format("searchTerm={0}", System.Uri.EscapeDataString(string.Empty)));
-                }
-                else
-                {
-                    foreach (var _item in searchTerm)
-                    {
-                        _queryParameters.Add(string.Format("searchTerm={0}", System.Uri.EscapeDataString("" + _item)));
-                    }
-                }
+                _queryParameters.Add(string.Format("searchTerm={0}", System.Uri.EscapeDataString(string.Join(",", searchTerm))));
             }
             if (_queryParameters.Count > 0)
             {
@@ -1146,7 +1076,7 @@ namespace BeerBot.BeerApiClient
         /// <return>
         /// A response object containing the response body and response headers.
         /// </return>
-        public async Task<HttpOperationResponse<Category>> CategoriesByIdGetWithHttpMessagesAsync(int id, Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken))
+        public async Task<HttpOperationResponse<Category>> GetCategoryByIdWithHttpMessagesAsync(int id, Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken))
         {
             // Tracing
             bool _shouldTrace = ServiceClientTracing.IsEnabled;
@@ -1157,7 +1087,7 @@ namespace BeerBot.BeerApiClient
                 Dictionary<string, object> tracingParameters = new Dictionary<string, object>();
                 tracingParameters.Add("id", id);
                 tracingParameters.Add("cancellationToken", cancellationToken);
-                ServiceClientTracing.Enter(_invocationId, this, "CategoriesByIdGet", tracingParameters);
+                ServiceClientTracing.Enter(_invocationId, this, "GetCategoryById", tracingParameters);
             }
             // Construct URL
             var _baseUrl = BaseUri.AbsoluteUri;
@@ -1269,7 +1199,7 @@ namespace BeerBot.BeerApiClient
         /// <return>
         /// A response object containing the response body and response headers.
         /// </return>
-        public async Task<HttpOperationResponse<IList<Style>>> StylesGetWithHttpMessagesAsync(IList<string> searchTerm = default(IList<string>), IList<int?> categoryId = default(IList<int?>), Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken))
+        public async Task<HttpOperationResponse<IList<Style>>> GetStylesWithHttpMessagesAsync(IList<string> searchTerm = default(IList<string>), IList<int?> categoryId = default(IList<int?>), Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken))
         {
             // Tracing
             bool _shouldTrace = ServiceClientTracing.IsEnabled;
@@ -1281,7 +1211,7 @@ namespace BeerBot.BeerApiClient
                 tracingParameters.Add("searchTerm", searchTerm);
                 tracingParameters.Add("categoryId", categoryId);
                 tracingParameters.Add("cancellationToken", cancellationToken);
-                ServiceClientTracing.Enter(_invocationId, this, "StylesGet", tracingParameters);
+                ServiceClientTracing.Enter(_invocationId, this, "GetStyles", tracingParameters);
             }
             // Construct URL
             var _baseUrl = BaseUri.AbsoluteUri;
@@ -1289,31 +1219,11 @@ namespace BeerBot.BeerApiClient
             List<string> _queryParameters = new List<string>();
             if (searchTerm != null)
             {
-                if (searchTerm.Count == 0)
-                {
-                    _queryParameters.Add(string.Format("searchTerm={0}", System.Uri.EscapeDataString(string.Empty)));
-                }
-                else
-                {
-                    foreach (var _item in searchTerm)
-                    {
-                        _queryParameters.Add(string.Format("searchTerm={0}", System.Uri.EscapeDataString("" + _item)));
-                    }
-                }
+                _queryParameters.Add(string.Format("searchTerm={0}", System.Uri.EscapeDataString(string.Join(",", searchTerm))));
             }
             if (categoryId != null)
             {
-                if (categoryId.Count == 0)
-                {
-                    _queryParameters.Add(string.Format("categoryId={0}", System.Uri.EscapeDataString(string.Empty)));
-                }
-                else
-                {
-                    foreach (var _item in categoryId)
-                    {
-                        _queryParameters.Add(string.Format("categoryId={0}", System.Uri.EscapeDataString("" + _item)));
-                    }
-                }
+                _queryParameters.Add(string.Format("categoryId={0}", System.Uri.EscapeDataString(string.Join(",", categoryId))));
             }
             if (_queryParameters.Count > 0)
             {
@@ -1423,7 +1333,7 @@ namespace BeerBot.BeerApiClient
         /// <return>
         /// A response object containing the response body and response headers.
         /// </return>
-        public async Task<HttpOperationResponse<Style>> StylesByIdGetWithHttpMessagesAsync(int id, Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken))
+        public async Task<HttpOperationResponse<Style>> GetStyleByIdWithHttpMessagesAsync(int id, Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken))
         {
             // Tracing
             bool _shouldTrace = ServiceClientTracing.IsEnabled;
@@ -1434,7 +1344,7 @@ namespace BeerBot.BeerApiClient
                 Dictionary<string, object> tracingParameters = new Dictionary<string, object>();
                 tracingParameters.Add("id", id);
                 tracingParameters.Add("cancellationToken", cancellationToken);
-                ServiceClientTracing.Enter(_invocationId, this, "StylesByIdGet", tracingParameters);
+                ServiceClientTracing.Enter(_invocationId, this, "GetStyleById", tracingParameters);
             }
             // Construct URL
             var _baseUrl = BaseUri.AbsoluteUri;
